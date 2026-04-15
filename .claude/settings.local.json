@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(pnpm prisma:*)",
+      "Bash(pnpm exec:*)",
+      "Bash(node_modules/.bin/prisma generate:*)",
+      "Bash(ls:*)",
+      "Bash(docker compose:*)",
+      "Bash(node_modules/.bin/prisma migrate:*)",
+      "Bash(docker exec chaskicert_db:*)",
+      "Bash(node:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm db:migrate)"
+    ]
+  }
+}
