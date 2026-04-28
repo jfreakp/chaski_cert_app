@@ -12,7 +12,8 @@
       "Bash(docker exec chaskicert_db:*)",
       "Bash(node:*)",
       "Bash(pnpm lint:*)",
-      "Bash(pnpm db:migrate)"
+      "Bash(pnpm db:migrate)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"si\" pnpm prisma:*)"
     ]
   }
 }

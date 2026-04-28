@@ -89,7 +89,7 @@ export async function updateUser(
   state: UserFormState,
   formData: FormData
 ): Promise<UserFormState> {
-  await requireAdmin()
+  const session = await requireAdmin()
 
   const validatedFields = UpdateUserSchema.safeParse({
     name: formData.get('name'),
@@ -106,6 +106,10 @@ export async function updateUser(
   }
 
   const { name, role } = validatedFields.data
+
+  if (session.userId === userId && role !== session.role) {
+    return { message: 'No puedes cambiar tu propio rol.' }
+  }
 
   await prisma.user.update({
     where: { id: userId },
