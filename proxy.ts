@@ -3,28 +3,31 @@ import { decrypt } from '@/app/lib/session'
 
 const publicRoutes = ['/login', '/forgot-password', '/reset-password']
 const adminRoutes = ['/dashboard/users', '/dashboard/institutions', '/dashboard/settings']
+const universityRoutes = ['/dashboard/careers', '/dashboard/students/new']
 
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname
   const isPublicRoute = publicRoutes.some((r) => path.startsWith(r))
   const isDashboardRoute = path.startsWith('/dashboard')
   const isAdminRoute = adminRoutes.some((r) => path.startsWith(r))
+  const isUniversityRoute = universityRoutes.some((r) => path.startsWith(r))
 
   const sessionCookie = req.cookies.get('session')?.value
   const session = await decrypt(sessionCookie)
 
-  // Redirigir a /login si no autenticado y ruta protegida
   if (isDashboardRoute && !session?.userId) {
     return NextResponse.redirect(new URL('/login', req.nextUrl))
   }
 
-  // Redirigir a /dashboard si ya autenticado y en ruta pública
   if (isPublicRoute && session?.userId) {
     return NextResponse.redirect(new URL('/dashboard', req.nextUrl))
   }
 
-  // Solo ADMIN puede acceder a rutas de administración
   if (isAdminRoute && session?.role !== 'ADMIN') {
+    return NextResponse.redirect(new URL('/dashboard', req.nextUrl))
+  }
+
+  if (isUniversityRoute && session?.role !== 'UNIVERSITY') {
     return NextResponse.redirect(new URL('/dashboard', req.nextUrl))
   }
 

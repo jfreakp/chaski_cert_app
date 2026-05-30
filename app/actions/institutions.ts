@@ -104,6 +104,14 @@ export async function toggleInstitutionStatus(institutionId: string) {
 export async function deleteInstitution(institutionId: string) {
   await requireAdmin()
 
+  const [users, enrollments, careers] = await Promise.all([
+    prisma.user.count({ where: { institutionId } }),
+    prisma.studentEnrollment.count({ where: { institutionId } }),
+    prisma.career.count({ where: { institutionId } }),
+  ])
+
+  if (users > 0 || enrollments > 0 || careers > 0) return
+
   await prisma.institution.delete({ where: { id: institutionId } })
   revalidatePath('/dashboard/institutions')
 }

@@ -4,6 +4,7 @@ import { PROJECT_NAME } from '@/app/lib/config'
 import {
   LayoutDashboard,
   GraduationCap,
+  BookOpen,
   Bell,
 } from 'lucide-react'
 import UserDropdown from './components/user-dropdown'
@@ -12,6 +13,7 @@ import AdminMenu from './components/admin-menu'
 const mainLinks = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/students', icon: GraduationCap, label: 'Estudiantes' },
+  { href: '/dashboard/careers', icon: BookOpen, label: 'Carreras', universityOnly: true },
 ]
 
 export default async function DashboardLayout({
@@ -47,7 +49,7 @@ export default async function DashboardLayout({
         <nav className="flex-1 flex flex-col px-4 gap-6 overflow-y-auto">
           {/* Sección principal */}
           <div className="flex flex-col gap-0.5">
-            {mainLinks.map(({ href, icon: Icon, label }) => (
+            {mainLinks.filter((l) => !('universityOnly' in l) || (!isAdmin)).map(({ href, icon: Icon, label }) => (
               <Link
                 key={href}
                 href={href}
