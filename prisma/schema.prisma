@@ -13,33 +13,72 @@ enum Role {
 }
 
 model Institution {
-  id        String   @id @default(uuid())
-  name      String
-  code      String   @unique
-  country   String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  country     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
 
-  users     User[]
+  users       User[]
+  careers     Career[]
+  enrollments StudentEnrollment[]
+}
+
+model Career {
+  id            String      @id @default(uuid())
+  name          String
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  enrollments   StudentEnrollment[]
+
+  @@unique([name, institutionId])
+}
+
+model Student {
+  id          String   @id @default(uuid())
+  name        String
+  dni         String   @unique
+  email       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  enrollments StudentEnrollment[]
+}
+
+model StudentEnrollment {
+  id            String      @id @default(uuid())
+  createdAt     DateTime    @default(now())
+
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id])
+
+  careerId      String?
+  career        Career?     @relation(fields: [careerId], references: [id])
+
+  @@unique([studentId, institutionId])
 }
 
 model User {
-  id                String       @id @default(uuid())
-  email             String       @unique
-  password          String
-  role              Role
-  isActive          Boolean      @default(true)
-  createdAt         DateTime     @default(now())
+  id               String       @id @default(uuid())
+  email            String       @unique
+  password         String
+  role             Role
+  isActive         Boolean      @default(true)
+  createdAt        DateTime     @default(now())
 
-  // Perfil
-  name              String?
-  position          String?
+  name             String?
+  position         String?
 
-  // Relación con institución (obligatorio para UNIVERSITY)
-  institutionId     String?
-  institution       Institution? @relation(fields: [institutionId], references: [id])
+  institutionId    String?
+  institution      Institution? @relation(fields: [institutionId], references: [id])
 
-  // Reset de contraseña
-  resetToken        String?      @unique
-  resetTokenExpiry  DateTime?
+  resetToken       String?      @unique
+  resetTokenExpiry DateTime?
 }

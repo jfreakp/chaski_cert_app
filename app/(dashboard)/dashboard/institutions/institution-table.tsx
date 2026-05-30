@@ -12,7 +12,7 @@ type Institution = {
   country: string | null
   isActive: boolean
   createdAt: Date
-  _count: { users: number }
+  _count: { users: number; enrollments: number; careers: number }
 }
 
 function RowActions({ institution }: { institution: Institution }) {
@@ -50,8 +50,12 @@ function RowActions({ institution }: { institution: Institution }) {
             startDelete(() => deleteInstitution(institution.id))
           }
         }}
-        disabled={pendingDelete || institution._count.users > 0}
-        title={institution._count.users > 0 ? 'Tiene usuarios asociados' : 'Eliminar'}
+        disabled={pendingDelete || institution._count.users > 0 || institution._count.enrollments > 0 || institution._count.careers > 0}
+        title={
+          institution._count.users > 0 ? 'Tiene usuarios asociados' :
+          institution._count.enrollments > 0 ? 'Tiene estudiantes matriculados' :
+          institution._count.careers > 0 ? 'Tiene carreras registradas' : 'Eliminar'
+        }
         className="p-2 rounded-lg text-secondary hover:text-error hover:bg-error-container/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {pendingDelete ? (

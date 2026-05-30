@@ -53,3 +53,17 @@ export async function requireAdmin() {
   if (session.role !== Role.ADMIN) redirect('/dashboard')
   return session
 }
+
+export async function requireInstitution() {
+  const session = await verifySession()
+  if (session.role === Role.ADMIN) return { session, institutionId: null as null }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { institutionId: true },
+  })
+
+  if (!user?.institutionId) redirect('/dashboard/no-institution')
+
+  return { session, institutionId: user.institutionId }
+}

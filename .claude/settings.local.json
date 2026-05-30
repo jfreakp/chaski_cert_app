@@ -25,7 +25,12 @@
       "Read(//tmp/**)",
       "Bash(curl *)",
       "Bash(npx playwright *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git commit *)",
+      "Bash(xargs kill -9)",
+      "Bash(pnpm db:reset)",
+      "Bash(git -C /Users/juanpablotorres/Documents/myworks/chaski_cert_app status --short)",
+      "Bash(git add *)"
     ]
   }
 }

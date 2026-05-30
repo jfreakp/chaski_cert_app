@@ -1,6 +1,6 @@
 # Chaski Cert App
 
-Plataforma de emisión de certificados digitales en blockchain (Polygon), con gestión de instituciones, usuarios y roles, construida con Next.js 16, Prisma 7 y PostgreSQL.
+Plataforma de emisión de certificados digitales en blockchain (Polygon), con gestión de instituciones, carreras, usuarios y estudiantes, construida con Next.js 16, Prisma 7 y PostgreSQL.
 
 ## Stack
 
@@ -16,17 +16,19 @@ Plataforma de emisión de certificados digitales en blockchain (Polygon), con ge
 
 ```
 app/
-├── (auth)/                  # Login, forgot-password, reset-password
+├── (auth)/                        # Login, forgot-password, reset-password
 ├── (dashboard)/
 │   ├── dashboard/
-│   │   ├── institutions/    # CRUD de instituciones (solo ADMIN)
-│   │   ├── users/           # CRUD de usuarios (solo ADMIN)
-│   │   ├── students/        # Gestión de estudiantes
-│   │   └── profile/         # Perfil del usuario
-│   └── components/          # Sidebar, dropdown, admin-menu
-├── actions/                 # Server actions (auth, usuarios, instituciones)
-├── api/auth/                # Route handlers (clear-session)
-└── lib/                     # Prisma client, sesión, DAL, email, config
+│   │   ├── institutions/          # CRUD instituciones (solo ADMIN)
+│   │   ├── users/                 # CRUD usuarios (solo ADMIN)
+│   │   ├── careers/               # CRUD carreras (solo UNIVERSITY)
+│   │   ├── students/              # Gestión estudiantes + CSV import
+│   │   ├── profile/               # Perfil del usuario
+│   │   └── no-institution/        # Error: UNIVERSITY sin institución
+│   └── components/                # Sidebar, dropdown, admin-menu
+├── actions/                       # Server actions (auth, usuarios, instituciones, carreras, estudiantes)
+├── api/auth/                      # Route handlers (clear-session)
+└── lib/                           # Prisma client, sesión, DAL, email, config
 prisma/
 ├── schema.prisma
 ├── seed.ts
@@ -37,15 +39,18 @@ prisma/
 
 | Modelo | Descripción |
 |--------|-------------|
+| `Institution` | Universidades e instituciones |
+| `Career` | Carreras ligadas a una institución |
+| `Student` | Estudiante (entidad global, identificado por cédula) |
+| `StudentEnrollment` | Matrícula: relación Student ↔ Institution + Career |
 | `User` | Usuarios de la plataforma |
-| `Institution` | Universidades e instituciones habilitadas |
 
 ## Roles
 
 | Rol | Descripción |
 |-----|-------------|
-| `ADMIN` | Gestión completa: usuarios, instituciones y configuración |
-| `UNIVERSITY` | Emisión de certificados vinculado a una institución |
+| `ADMIN` | Gestión completa: usuarios, instituciones |
+| `UNIVERSITY` | Gestión de carreras, estudiantes e importación CSV de su institución |
 
 ## Requisitos
 
@@ -94,7 +99,7 @@ NEXT_PUBLIC_APP_NAME=NombreDeTuPlataforma
 
 # Email (Gmail con App Password)
 GMAIL_USER=tu-cuenta@gmail.com
-GMAIL_APP_PASSWORD=       # App Password de Google (no la contraseña de la cuenta)
+GMAIL_APP_PASSWORD=
 ```
 
 ## Comandos
@@ -120,12 +125,19 @@ docker compose down -v    # Detener y eliminar volúmenes
 
 ## Seed inicial
 
-Tras correr `pnpm db:seed` se crean los siguientes datos de prueba:
-
 | Rol | Email | Password |
 |-----|-------|----------|
 | ADMIN | admin@chaskicert.com | Admin123! |
 | UNIVERSITY (UTPL) | utpl@universidad.edu.ec | University123! |
 | UNIVERSITY (UNL) | unl@universidad.edu.ec | University123! |
 
-Instituciones: **UTPL** y **UNL** (Ecuador).
+**Instituciones:** UTPL y UNL (Ecuador)
+
+**Carreras UTPL:** Ingeniería en Sistemas Informáticos, Administración de Empresas
+
+**Carreras UNL:** Medicina, Derecho
+
+**Estudiantes de prueba:**
+- María Fernanda Castro — matriculada en UTPL (Ing. Sistemas) y UNL (Medicina)
+- Juan Carlos Pérez — UTPL (Administración)
+- Ana Lucía Romero — UNL (Derecho)

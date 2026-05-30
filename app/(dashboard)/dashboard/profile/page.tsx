@@ -72,6 +72,12 @@ export default async function ProfilePage() {
               <span className="text-secondary">Nivel de Acceso</span>
               <span className="font-bold">{roleLabel[user.role]}</span>
             </div>
+            {user.institution && (
+              <div className="flex justify-between text-xs">
+                <span className="text-secondary">Institución</span>
+                <span className="font-bold text-right max-w-[160px] truncate">{user.institution.name}</span>
+              </div>
+            )}
             <div className="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
               <div
                 className="bg-primary-container h-full"

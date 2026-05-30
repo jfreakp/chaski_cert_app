@@ -18,7 +18,7 @@ export default async function InstitutionsPage() {
       country: true,
       isActive: true,
       createdAt: true,
-      _count: { select: { users: true } },
+      _count: { select: { users: true, enrollments: true, careers: true } },
     },
     orderBy: { name: 'asc' },
   })
