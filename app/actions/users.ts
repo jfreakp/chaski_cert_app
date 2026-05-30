@@ -27,6 +27,7 @@ export async function createUser(
     email: formData.get('email'),
     name: formData.get('name'),
     role: formData.get('role'),
+    institutionId: formData.get('institutionId') || undefined,
   })
 
   if (!validatedFields.success) {
@@ -35,11 +36,12 @@ export async function createUser(
         email?: string[]
         name?: string[]
         role?: string[]
+        institutionId?: string[]
       },
     }
   }
 
-  const { email, name, role } = validatedFields.data
+  const { email, name, role, institutionId } = validatedFields.data
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
@@ -58,10 +60,11 @@ export async function createUser(
     data: {
       email,
       name: name || null,
-      role: role as 'ADMIN' | 'ISSUER',
+      role: role as 'ADMIN' | 'UNIVERSITY',
       password: hashedPassword,
       resetToken,
       resetTokenExpiry,
+      institutionId: institutionId || null,
     },
   })
 
@@ -94,6 +97,7 @@ export async function updateUser(
   const validatedFields = UpdateUserSchema.safeParse({
     name: formData.get('name'),
     role: formData.get('role'),
+    institutionId: formData.get('institutionId') || undefined,
   })
 
   if (!validatedFields.success) {
@@ -101,11 +105,12 @@ export async function updateUser(
       errors: validatedFields.error.flatten().fieldErrors as {
         name?: string[]
         role?: string[]
+        institutionId?: string[]
       },
     }
   }
 
-  const { name, role } = validatedFields.data
+  const { name, role, institutionId } = validatedFields.data
 
   if (session.userId === userId && role !== session.role) {
     return { message: 'No puedes cambiar tu propio rol.' }
@@ -115,7 +120,8 @@ export async function updateUser(
     where: { id: userId },
     data: {
       name: name || null,
-      role: role as 'ADMIN' | 'ISSUER',
+      role: role as 'ADMIN' | 'UNIVERSITY',
+      institutionId: role === 'UNIVERSITY' ? (institutionId || null) : null,
     },
   })
 

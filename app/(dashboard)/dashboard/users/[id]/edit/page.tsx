@@ -15,10 +15,17 @@ export default async function EditUserPage({
   await requireAdmin()
   const { id } = await params
 
-  const user = await prisma.user.findUnique({
-    where: { id },
-    select: { id: true, email: true, name: true, role: true, isActive: true },
-  })
+  const [user, institutions] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, name: true, role: true, institutionId: true },
+    }),
+    prisma.institution.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, code: true },
+      orderBy: { name: 'asc' },
+    }),
+  ])
 
   if (!user) notFound()
 
@@ -26,7 +33,7 @@ export default async function EditUserPage({
     <div className="px-6 py-8 max-w-2xl mx-auto">
       <div className="mb-8">
         <span className="text-[10px] font-bold text-tertiary uppercase tracking-[0.3em] mb-2 block">
-          Usuarios
+          Administración · Usuarios
         </span>
         <h1 className="text-4xl font-extrabold text-on-surface tracking-tighter">
           Editar Usuario
@@ -38,6 +45,8 @@ export default async function EditUserPage({
         userId={user.id}
         defaultName={user.name}
         defaultRole={user.role as Role}
+        defaultInstitutionId={user.institutionId}
+        institutions={institutions}
       />
     </div>
   )

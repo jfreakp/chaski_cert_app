@@ -113,7 +113,6 @@ export async function updateProfile(
   const validatedFields = ProfileSchema.safeParse({
     name: formData.get('name'),
     position: formData.get('position'),
-    institution: formData.get('institution'),
   })
 
   if (!validatedFields.success) {
@@ -121,19 +120,17 @@ export async function updateProfile(
       errors: validatedFields.error.flatten().fieldErrors as {
         name?: string[]
         position?: string[]
-        institution?: string[]
       },
     }
   }
 
-  const { name, position, institution } = validatedFields.data
+  const { name, position } = validatedFields.data
 
   await prisma.user.update({
     where: { id: session.userId },
     data: {
       name: name || null,
       position: position || null,
-      institution: institution || null,
     },
   })
 

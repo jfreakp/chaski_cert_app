@@ -8,6 +8,16 @@ import { Role } from './definitions'
 export const verifySession = cache(async () => {
   const session = await getSession()
   if (!session?.userId) redirect('/login')
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { isActive: true },
+  })
+
+  if (!user || !user.isActive) {
+    redirect('/api/auth/clear-session')
+  }
+
   return session
 })
 

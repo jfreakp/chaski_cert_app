@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { decrypt } from '@/app/lib/session'
 
 const publicRoutes = ['/login', '/forgot-password', '/reset-password']
-const adminRoutes = ['/dashboard/users', '/dashboard/settings']
+const adminRoutes = ['/dashboard/users', '/dashboard/institutions', '/dashboard/settings']
 
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname

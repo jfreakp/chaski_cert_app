@@ -12,16 +12,17 @@ type User = {
   role: string
   isActive: boolean
   createdAt: Date
+  institution: { name: string; code: string } | null
 }
 
 const roleLabel: Record<string, string> = {
   ADMIN: 'Administrador',
-  ISSUER: 'Emisor',
+  UNIVERSITY: 'Universidad',
 }
 
 const roleBadge: Record<string, string> = {
   ADMIN: 'bg-primary-container/15 text-primary-container',
-  ISSUER: 'bg-tertiary/10 text-tertiary',
+  UNIVERSITY: 'bg-tertiary/10 text-tertiary',
 }
 
 function RowActions({ user }: { user: User }) {
@@ -31,21 +32,15 @@ function RowActions({ user }: { user: User }) {
 
   return (
     <div className="flex items-center gap-1 justify-end">
-      {/* Reset contraseña */}
       <button
         onClick={() => startReset(() => sendPasswordReset(user.id))}
         disabled={pendingReset || !user.isActive}
         title="Enviar reset de contraseña"
         className="p-2 rounded-lg text-secondary hover:text-primary-container hover:bg-surface-container-low transition-all disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {pendingReset ? (
-          <Loader2 size={16} strokeWidth={2} className="animate-spin" />
-        ) : (
-          <KeyRound size={16} strokeWidth={1.75} />
-        )}
+        {pendingReset ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : <KeyRound size={16} strokeWidth={1.75} />}
       </button>
 
-      {/* Editar */}
       <Link
         href={`/dashboard/users/${user.id}/edit`}
         className="p-2 rounded-lg text-secondary hover:text-primary-container hover:bg-surface-container-low transition-all"
@@ -54,7 +49,6 @@ function RowActions({ user }: { user: User }) {
         <Pencil size={16} strokeWidth={1.75} />
       </Link>
 
-      {/* Toggle activo */}
       <button
         onClick={() => startToggle(() => toggleUserStatus(user.id))}
         disabled={pendingToggle}
@@ -70,7 +64,6 @@ function RowActions({ user }: { user: User }) {
         )}
       </button>
 
-      {/* Eliminar */}
       <button
         onClick={() => {
           if (confirm(`¿Eliminar permanentemente a ${user.email}?`)) {
@@ -81,11 +74,7 @@ function RowActions({ user }: { user: User }) {
         title="Eliminar usuario"
         className="p-2 rounded-lg text-secondary hover:text-error hover:bg-error-container/10 transition-all disabled:opacity-40"
       >
-        {pendingDelete ? (
-          <Loader2 size={16} strokeWidth={2} className="animate-spin" />
-        ) : (
-          <Trash2 size={16} strokeWidth={1.75} />
-        )}
+        {pendingDelete ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : <Trash2 size={16} strokeWidth={1.75} />}
       </button>
     </div>
   )
@@ -97,18 +86,11 @@ export default function UserTable({ users }: { users: User[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-surface-container bg-surface-container-lowest">
-            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary">
-              Usuario
-            </th>
-            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden md:table-cell">
-              Rol
-            </th>
-            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden lg:table-cell">
-              Creado
-            </th>
-            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary">
-              Estado
-            </th>
+            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary">Usuario</th>
+            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden md:table-cell">Rol</th>
+            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden lg:table-cell">Institución</th>
+            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden lg:table-cell">Creado</th>
+            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary">Estado</th>
             <th className="px-6 py-4" />
           </tr>
         </thead>
@@ -127,9 +109,7 @@ export default function UserTable({ users }: { users: User[] }) {
                       {initials}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-on-surface truncate">
-                        {user.name ?? '—'}
-                      </p>
+                      <p className="font-semibold text-on-surface truncate">{user.name ?? '—'}</p>
                       <p className="text-xs text-secondary truncate">{user.email}</p>
                     </div>
                   </div>
@@ -142,12 +122,22 @@ export default function UserTable({ users }: { users: User[] }) {
                   </span>
                 </td>
 
+                {/* Institución */}
+                <td className="px-6 py-4 hidden lg:table-cell">
+                  {user.institution ? (
+                    <div>
+                      <p className="text-sm font-medium text-on-surface truncate max-w-[180px]">{user.institution.name}</p>
+                      <p className="text-[10px] font-bold text-tertiary uppercase tracking-wider">{user.institution.code}</p>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-outline">—</span>
+                  )}
+                </td>
+
                 {/* Fecha */}
                 <td className="px-6 py-4 text-xs text-secondary hidden lg:table-cell">
                   {new Date(user.createdAt).toLocaleDateString('es-PE', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
+                    day: 'numeric', month: 'short', year: 'numeric',
                   })}
                 </td>
 

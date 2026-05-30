@@ -9,23 +9,37 @@ datasource db {
 
 enum Role {
   ADMIN
-  ISSUER
+  UNIVERSITY
+}
+
+model Institution {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  country   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  users     User[]
 }
 
 model User {
-  id                String    @id @default(uuid())
-  email             String    @unique
+  id                String       @id @default(uuid())
+  email             String       @unique
   password          String
   role              Role
-  isActive          Boolean   @default(true)
-  createdAt         DateTime  @default(now())
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now())
 
   // Perfil
   name              String?
   position          String?
-  institution       String?
+
+  // Relación con institución (obligatorio para UNIVERSITY)
+  institutionId     String?
+  institution       Institution? @relation(fields: [institutionId], references: [id])
 
   // Reset de contraseña
-  resetToken        String?   @unique
+  resetToken        String?      @unique
   resetTokenExpiry  DateTime?
 }

@@ -16,7 +16,7 @@ type Props = {
 
 const roleLabel: Record<Role, string> = {
   ADMIN: 'Administrador Senior',
-  ISSUER: 'Institución Emisora',
+  UNIVERSITY: 'Universidad',
 }
 
 export default function ProfileForm({
@@ -84,22 +84,18 @@ export default function ProfileForm({
                 </div>
               </div>
 
-              {/* Institución */}
-              <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-[10px] font-extrabold uppercase tracking-widest text-secondary">
-                  Institución
-                </label>
-                <div className="relative group">
-                  <input
-                    name="institution"
-                    type="text"
-                    defaultValue={institution ?? ''}
-                    placeholder="Ej: Universidad Nacional de Ingeniería"
-                    className="w-full bg-surface-container-low border-none rounded-sm px-4 py-3 focus:ring-2 focus:ring-primary-container outline-none font-medium text-on-surface placeholder:text-outline/40 transition-all"
-                  />
-                  <Pencil size={14} strokeWidth={1.75} className="absolute right-3 top-3.5 text-secondary opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+              {/* Institución — solo lectura, asignada por el admin */}
+              {institution && (
+                <div className="flex flex-col gap-2 md:col-span-2">
+                  <label className="text-[10px] font-extrabold uppercase tracking-widest text-secondary">
+                    Institución (Solo Lectura)
+                  </label>
+                  <div className="flex items-center gap-3 bg-surface-container-highest/30 border border-outline-variant/20 rounded-sm px-4 py-3">
+                    <Lock size={14} strokeWidth={1.75} className="text-secondary shrink-0" />
+                    <span className="text-secondary font-medium text-sm">{institution}</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Email — solo lectura */}
               <div className="flex flex-col gap-2 md:col-span-2">

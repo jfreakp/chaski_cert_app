@@ -29,7 +29,7 @@ const statusConfig = {
 export default async function ProcessesPage() {
   const session = await verifySession()
 
-  if (session.role !== Role.ADMIN && session.role !== Role.ISSUER) {
+  if (session.role !== Role.ADMIN && session.role !== Role.UNIVERSITY) {
     redirect('/dashboard')
   }
 

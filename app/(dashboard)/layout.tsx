@@ -1,43 +1,17 @@
 import Link from 'next/link'
 import { getCurrentUser } from '@/app/lib/dal'
-import { Role } from '@/app/lib/definitions'
 import { PROJECT_NAME } from '@/app/lib/config'
 import {
   LayoutDashboard,
   GraduationCap,
-  Cpu,
-  Settings,
   Bell,
-  Users,
 } from 'lucide-react'
 import UserDropdown from './components/user-dropdown'
+import AdminMenu from './components/admin-menu'
 
-const navLinks = [
+const mainLinks = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  {
-    href: '/dashboard/students',
-    icon: GraduationCap,
-    label: 'Estudiantes',
-    roles: [Role.ADMIN, Role.ISSUER],
-  },
-  {
-    href: '/dashboard/processes',
-    icon: Cpu,
-    label: 'Procesos',
-    roles: [Role.ADMIN, Role.ISSUER],
-  },
-  {
-    href: '/dashboard/users',
-    icon: Users,
-    label: 'Usuarios',
-    roles: [Role.ADMIN],
-  },
-  {
-    href: '/dashboard/settings',
-    icon: Settings,
-    label: 'Configuración',
-    roles: [Role.ADMIN],
-  },
+  { href: '/dashboard/students', icon: GraduationCap, label: 'Estudiantes' },
 ]
 
 export default async function DashboardLayout({
@@ -46,10 +20,7 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const user = await getCurrentUser()
-
-  const visibleLinks = navLinks.filter(
-    (link) => !link.roles || (user && link.roles.includes(user.role))
-  )
+  const isAdmin = user?.role === 'ADMIN'
 
   const initials = user?.name
     ? user.name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
@@ -68,22 +39,28 @@ export default async function DashboardLayout({
             {PROJECT_NAME}
           </p>
           <p className="text-[10px] font-bold text-tertiary uppercase tracking-[0.2em] mt-0.5">
-            {user?.role === Role.ADMIN ? 'Admin Panel' : 'Academic Ledger'}
+            {isAdmin ? 'Admin Panel' : 'Academic Ledger'}
           </p>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 flex flex-col gap-0.5 px-4">
-          {visibleLinks.map(({ href, icon: Icon, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-secondary hover:text-primary-container hover:bg-surface-container-low transition-all"
-            >
-              <Icon size={20} strokeWidth={1.75} />
-              <span>{label}</span>
-            </Link>
-          ))}
+        <nav className="flex-1 flex flex-col px-4 gap-6 overflow-y-auto">
+          {/* Sección principal */}
+          <div className="flex flex-col gap-0.5">
+            {mainLinks.map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-secondary hover:text-primary-container hover:bg-surface-container-low transition-all"
+              >
+                <Icon size={20} strokeWidth={1.75} />
+                <span>{label}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Sección administración — solo ADMIN */}
+          {isAdmin && <AdminMenu />}
         </nav>
 
         {/* Usuario al fondo */}

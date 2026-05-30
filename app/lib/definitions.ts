@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export enum Role {
   ADMIN = 'ADMIN',
-  ISSUER = 'ISSUER',
+  UNIVERSITY = 'UNIVERSITY',
 }
 
 export const LoginSchema = z.object({
@@ -31,7 +31,6 @@ export type SessionPayload = {
 export const ProfileSchema = z.object({
   name: z.string().min(2, { error: 'Mínimo 2 caracteres.' }).trim(),
   position: z.string().trim().optional(),
-  institution: z.string().trim().optional(),
 })
 
 export type ProfileFormState =
@@ -39,7 +38,6 @@ export type ProfileFormState =
       errors?: {
         name?: string[]
         position?: string[]
-        institution?: string[]
       }
       message?: string
       success?: boolean
@@ -51,13 +49,21 @@ export type ProfileFormState =
 export const CreateUserSchema = z.object({
   email: z.email({ error: 'Correo electrónico inválido.' }).trim(),
   name: z.string().trim().optional(),
-  role: z.enum(['ADMIN', 'ISSUER'], { error: 'Rol inválido.' }),
-})
+  role: z.enum(['ADMIN', 'UNIVERSITY'], { error: 'Rol inválido.' }),
+  institutionId: z.string().optional(),
+}).refine(
+  (data) => data.role !== 'UNIVERSITY' || !!data.institutionId,
+  { error: 'Debe seleccionar una institución.', path: ['institutionId'] }
+)
 
 export const UpdateUserSchema = z.object({
   name: z.string().trim().optional(),
-  role: z.enum(['ADMIN', 'ISSUER'], { error: 'Rol inválido.' }),
-})
+  role: z.enum(['ADMIN', 'UNIVERSITY'], { error: 'Rol inválido.' }),
+  institutionId: z.string().optional(),
+}).refine(
+  (data) => data.role !== 'UNIVERSITY' || !!data.institutionId,
+  { error: 'Debe seleccionar una institución.', path: ['institutionId'] }
+)
 
 export type UserFormState =
   | {
@@ -65,6 +71,7 @@ export type UserFormState =
         email?: string[]
         name?: string[]
         role?: string[]
+        institutionId?: string[]
       }
       message?: string
       success?: boolean

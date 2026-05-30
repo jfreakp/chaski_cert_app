@@ -14,7 +14,7 @@ type Props = {
 
 const roleLabel: Record<Role, string> = {
   [Role.ADMIN]: 'Administrador',
-  [Role.ISSUER]: 'Institución Emisora',
+  [Role.UNIVERSITY]: 'Universidad',
 }
 
 function getInitials(name: string | null, email: string | undefined) {

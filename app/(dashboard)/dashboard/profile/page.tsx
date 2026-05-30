@@ -19,9 +19,9 @@ export default async function ProfilePage() {
       role: true,
       name: true,
       position: true,
-      institution: true,
       isActive: true,
       createdAt: true,
+      institution: { select: { name: true } },
     },
   })
 
@@ -29,7 +29,7 @@ export default async function ProfilePage() {
 
   const roleLabel: Record<string, string> = {
     ADMIN: 'Administrador Senior',
-    ISSUER: 'Institución Emisora',
+    UNIVERSITY: 'Universidad',
   }
 
   return (
@@ -87,7 +87,7 @@ export default async function ProfilePage() {
         name={user.name}
         email={user.email}
         position={user.position}
-        institution={user.institution}
+        institution={user.institution?.name ?? null}
         role={user.role as Role}
         createdAt={user.createdAt}
       />

@@ -1,26 +1,26 @@
 import Link from 'next/link'
 import { requireAdmin } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
-import { Users, UserPlus } from 'lucide-react'
-import UserTable from './user-table'
+import { Building2, Plus } from 'lucide-react'
 import { PROJECT_NAME } from '@/app/lib/config'
+import InstitutionTable from './institution-table'
 
-export const metadata = { title: `${PROJECT_NAME} — Usuarios` }
+export const metadata = { title: `${PROJECT_NAME} — Instituciones` }
 
-export default async function UsersPage() {
+export default async function InstitutionsPage() {
   await requireAdmin()
 
-  const users = await prisma.user.findMany({
+  const institutions = await prisma.institution.findMany({
     select: {
       id: true,
-      email: true,
       name: true,
-      role: true,
+      code: true,
+      country: true,
       isActive: true,
       createdAt: true,
-      institution: { select: { name: true, code: true } },
+      _count: { select: { users: true } },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { name: 'asc' },
   })
 
   return (
@@ -32,19 +32,19 @@ export default async function UsersPage() {
             Administración
           </span>
           <h1 className="text-4xl font-extrabold text-on-surface tracking-tighter">
-            Usuarios
+            Instituciones
           </h1>
           <p className="text-secondary mt-2">
-            Gestiona los accesos a la plataforma {PROJECT_NAME}.
+            Gestiona las universidades e instituciones habilitadas en {PROJECT_NAME}.
           </p>
         </div>
 
         <Link
-          href="/dashboard/users/new"
+          href="/dashboard/institutions/new"
           className="inline-flex items-center gap-2 bg-primary-container hover:bg-primary text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg shadow-primary-container/20 text-sm"
         >
-          <UserPlus size={18} strokeWidth={1.75} />
-          Nuevo Usuario
+          <Plus size={18} strokeWidth={1.75} />
+          Nueva Institución
         </Link>
       </div>
 
@@ -52,30 +52,30 @@ export default async function UsersPage() {
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-white rounded-xl p-5 border border-surface-container">
           <p className="text-[10px] font-bold text-tertiary uppercase tracking-widest mb-1">Total</p>
-          <p className="text-3xl font-extrabold text-on-surface tracking-tighter">{users.length}</p>
+          <p className="text-3xl font-extrabold text-on-surface tracking-tighter">{institutions.length}</p>
         </div>
         <div className="bg-white rounded-xl p-5 border border-surface-container">
-          <p className="text-[10px] font-bold text-tertiary uppercase tracking-widest mb-1">Activos</p>
+          <p className="text-[10px] font-bold text-tertiary uppercase tracking-widest mb-1">Activas</p>
           <p className="text-3xl font-extrabold text-on-surface tracking-tighter">
-            {users.filter((u) => u.isActive).length}
+            {institutions.filter((i) => i.isActive).length}
           </p>
         </div>
         <div className="bg-white rounded-xl p-5 border border-surface-container">
-          <p className="text-[10px] font-bold text-tertiary uppercase tracking-widest mb-1">Admins</p>
+          <p className="text-[10px] font-bold text-tertiary uppercase tracking-widest mb-1">Usuarios</p>
           <p className="text-3xl font-extrabold text-on-surface tracking-tighter">
-            {users.filter((u) => u.role === 'ADMIN').length}
+            {institutions.reduce((sum, i) => sum + i._count.users, 0)}
           </p>
         </div>
       </div>
 
       {/* Table */}
-      {users.length === 0 ? (
+      {institutions.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center text-secondary">
-          <Users size={40} strokeWidth={1} className="text-outline/40 mb-3 mx-auto" />
-          <p className="text-sm font-medium">No hay usuarios registrados.</p>
+          <Building2 size={40} strokeWidth={1} className="text-outline/40 mb-3 mx-auto" />
+          <p className="text-sm font-medium">No hay instituciones registradas.</p>
         </div>
       ) : (
-        <UserTable users={users} />
+        <InstitutionTable institutions={institutions} />
       )}
     </div>
   )

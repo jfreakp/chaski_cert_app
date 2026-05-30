@@ -1,20 +1,32 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { useActionState } from 'react'
 import { updateUser } from '@/app/actions/users'
 import type { Role } from '@/app/lib/definitions'
-import { User, Shield, Loader2, Save, CheckCircle2 } from 'lucide-react'
+import { User, Shield, Building2, Loader2, Save, CheckCircle2 } from 'lucide-react'
+
+type Institution = { id: string; name: string; code: string }
 
 type Props = {
   userId: string
   defaultName: string | null
   defaultRole: Role
+  defaultInstitutionId: string | null
+  institutions: Institution[]
 }
 
-export default function EditUserForm({ userId, defaultName, defaultRole }: Props) {
+export default function EditUserForm({
+  userId,
+  defaultName,
+  defaultRole,
+  defaultInstitutionId,
+  institutions,
+}: Props) {
   const updateUserWithId = updateUser.bind(null, userId)
   const [state, action, pending] = useActionState(updateUserWithId, undefined)
+  const [role, setRole] = useState<string>(defaultRole)
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-8 border border-surface-container">
@@ -25,11 +37,7 @@ export default function EditUserForm({ userId, defaultName, defaultRole }: Props
             Nombre Completo
           </label>
           <div className="relative">
-            <User
-              size={16}
-              strokeWidth={1.75}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary"
-            />
+            <User size={16} strokeWidth={1.75} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary" />
             <input
               name="name"
               type="text"
@@ -38,9 +46,7 @@ export default function EditUserForm({ userId, defaultName, defaultRole }: Props
               className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-transparent rounded-lg focus:ring-2 focus:ring-primary-container outline-none font-medium text-on-surface placeholder:text-outline/40 transition-all"
             />
           </div>
-          {state?.errors?.name && (
-            <p className="text-xs text-error">{state.errors.name[0]}</p>
-          )}
+          {state?.errors?.name && <p className="text-xs text-error">{state.errors.name[0]}</p>}
         </div>
 
         {/* Rol */}
@@ -49,25 +55,48 @@ export default function EditUserForm({ userId, defaultName, defaultRole }: Props
             Rol *
           </label>
           <div className="relative">
-            <Shield
-              size={16}
-              strokeWidth={1.75}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary pointer-events-none"
-            />
+            <Shield size={16} strokeWidth={1.75} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
             <select
               name="role"
               required
-              defaultValue={defaultRole}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-transparent rounded-lg focus:ring-2 focus:ring-primary-container outline-none font-medium text-on-surface transition-all appearance-none cursor-pointer"
             >
-              <option value="ISSUER">Emisor (Institución)</option>
+              <option value="UNIVERSITY">Universidad</option>
               <option value="ADMIN">Administrador</option>
             </select>
           </div>
-          {state?.errors?.role && (
-            <p className="text-xs text-error">{state.errors.role[0]}</p>
-          )}
+          {state?.errors?.role && <p className="text-xs text-error">{state.errors.role[0]}</p>}
         </div>
+
+        {/* Institución — solo si rol es UNIVERSITY */}
+        {role === 'UNIVERSITY' && (
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-extrabold uppercase tracking-widest text-secondary">
+              Institución *
+            </label>
+            <div className="relative">
+              <Building2 size={16} strokeWidth={1.75} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary pointer-events-none" />
+              <select
+                name="institutionId"
+                required
+                defaultValue={defaultInstitutionId ?? ''}
+                className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-transparent rounded-lg focus:ring-2 focus:ring-primary-container outline-none font-medium text-on-surface transition-all appearance-none cursor-pointer"
+              >
+                <option value="">Selecciona una institución...</option>
+                {institutions.map((inst) => (
+                  <option key={inst.id} value={inst.id}>
+                    {inst.name} ({inst.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+            {state?.errors?.institutionId && (
+              <p className="text-xs text-error">{state.errors.institutionId[0]}</p>
+            )}
+          </div>
+        )}
 
         {/* Feedback */}
         {state?.message && !state.success && (
@@ -84,10 +113,7 @@ export default function EditUserForm({ userId, defaultName, defaultRole }: Props
 
         {/* Acciones */}
         <div className="flex justify-end items-center gap-4 pt-2">
-          <Link
-            href="/dashboard/users"
-            className="text-sm font-bold text-secondary hover:text-on-surface transition-colors"
-          >
+          <Link href="/dashboard/users" className="text-sm font-bold text-secondary hover:text-on-surface transition-colors">
             Cancelar
           </Link>
           <button
@@ -96,15 +122,9 @@ export default function EditUserForm({ userId, defaultName, defaultRole }: Props
             className="inline-flex items-center gap-2 bg-primary-container hover:bg-primary text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg shadow-primary-container/20 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed text-sm"
           >
             {pending ? (
-              <>
-                <Loader2 size={16} strokeWidth={2} className="animate-spin" />
-                Guardando...
-              </>
+              <><Loader2 size={16} strokeWidth={2} className="animate-spin" />Guardando...</>
             ) : (
-              <>
-                <Save size={16} strokeWidth={1.75} />
-                Guardar Cambios
-              </>
+              <><Save size={16} strokeWidth={1.75} />Guardar Cambios</>
             )}
           </button>
         </div>
