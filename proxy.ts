@@ -3,7 +3,12 @@ import { decrypt } from '@/app/lib/session'
 
 const publicRoutes = ['/login', '/forgot-password', '/reset-password']
 const adminRoutes = ['/dashboard/users', '/dashboard/institutions', '/dashboard/settings', '/dashboard/certificate-types']
-const universityRoutes = ['/dashboard/careers', '/dashboard/students/new', '/dashboard/events/new']
+const universityRoutes = [
+  '/dashboard/careers',
+  '/dashboard/students/new',
+  '/dashboard/processes/new',
+  '/dashboard/processes/',
+]
 
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname

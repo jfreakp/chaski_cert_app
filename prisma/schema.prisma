@@ -23,7 +23,7 @@ model Institution {
   users       User[]
   careers     Career[]
   enrollments StudentEnrollment[]
-  events      Event[]
+  processes   CertificateProcess[]
 }
 
 model Career {
@@ -36,35 +36,54 @@ model Career {
   institution   Institution @relation(fields: [institutionId], references: [id])
   enrollments   StudentEnrollment[]
   certificates  Certificate[]
+  processes     CertificateProcess[]
 
   @@unique([name, institutionId])
 }
 
 model CertificateType {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id             String   @id @default(uuid())
+  name           String   @unique
+  description    String?
+  isActive       Boolean  @default(true)
+  requiresCareer Boolean  @default(false)
+  createdAt      DateTime @default(now())
 
-  events      Event[]
+  processes   CertificateProcess[]
 }
 
-model Event {
-  id                String          @id @default(uuid())
+model CertificateProcess {
+  id                String   @id @default(uuid())
   name              String
   description       String?
   date              DateTime
-  location          String?
-  isActive          Boolean         @default(true)
-  createdAt         DateTime        @default(now())
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
 
   institutionId     String
   institution       Institution     @relation(fields: [institutionId], references: [id])
 
   certificateTypeId String
   certificateType   CertificateType @relation(fields: [certificateTypeId], references: [id])
-  certificates      Certificate[]
+
+  careerId          String?
+  career            Career?         @relation(fields: [careerId], references: [id])
+
+  participants  ProcessParticipant[]
+  certificates  Certificate[]
+}
+
+model ProcessParticipant {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  processId String
+  process   CertificateProcess @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   Student            @relation(fields: [studentId], references: [id])
+
+  @@unique([processId, studentId])
 }
 
 model Student {
@@ -75,8 +94,9 @@ model Student {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
-  enrollments  StudentEnrollment[]
-  certificates Certificate[]
+  enrollments    StudentEnrollment[]
+  certificates   Certificate[]
+  participations ProcessParticipant[]
 }
 
 model StudentEnrollment {
@@ -108,8 +128,8 @@ model Certificate {
   issuedAt  DateTime?
   createdAt DateTime          @default(now())
 
-  eventId    String
-  event      Event            @relation(fields: [eventId], references: [id])
+  processId  String
+  process    CertificateProcess @relation(fields: [processId], references: [id])
 
   studentId  String
   student    Student          @relation(fields: [studentId], references: [id])
@@ -120,7 +140,7 @@ model Certificate {
   issuedById String
   issuedBy   User             @relation(fields: [issuedById], references: [id])
 
-  @@unique([eventId, studentId])
+  @@unique([processId, studentId])
 }
 
 model User {

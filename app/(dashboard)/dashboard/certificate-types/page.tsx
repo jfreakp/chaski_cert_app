@@ -16,8 +16,9 @@ export default async function CertificateTypesPage() {
       name: true,
       description: true,
       isActive: true,
+      requiresCareer: true,
       createdAt: true,
-      _count: { select: { events: true } },
+      _count: { select: { processes: true } },
     },
     orderBy: { name: 'asc' },
   })

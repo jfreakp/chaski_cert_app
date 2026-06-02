@@ -3,15 +3,16 @@
 import Link from 'next/link'
 import { useTransition } from 'react'
 import { toggleCertificateTypeStatus, deleteCertificateType } from '@/app/actions/certificate-types'
-import { Pencil, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { GraduationCap, Pencil, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
 type CertType = {
   id: string
   name: string
   description: string | null
   isActive: boolean
+  requiresCareer: boolean
   createdAt: Date
-  _count: { events: number }
+  _count: { processes: number }
 }
 
 function RowActions({ type }: { type: CertType }) {
@@ -32,9 +33,12 @@ function RowActions({ type }: { type: CertType }) {
           <CheckCircle size={16} strokeWidth={1.75} className="hover:text-green-600" />}
       </button>
       <button
-        onClick={() => { if (type._count.events > 0) return; if (confirm(`¿Eliminar "${type.name}"?`)) startDelete(() => deleteCertificateType(type.id)) }}
-        disabled={pendingDelete || type._count.events > 0}
-        title={type._count.events > 0 ? 'Tiene eventos asociados' : 'Eliminar'}
+        onClick={() => {
+          if (type._count.processes > 0) return
+          if (confirm(`¿Eliminar "${type.name}"?`)) startDelete(() => deleteCertificateType(type.id))
+        }}
+        disabled={pendingDelete || type._count.processes > 0}
+        title={type._count.processes > 0 ? 'Tiene procesos asociados' : 'Eliminar'}
         className="p-2 rounded-lg text-secondary hover:text-error hover:bg-error-container/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
         {pendingDelete ? <Loader2 size={16} strokeWidth={2} className="animate-spin" /> : <Trash2 size={16} strokeWidth={1.75} />}
       </button>
@@ -49,7 +53,8 @@ export default function CertificateTypeTable({ types }: { types: CertType[] }) {
         <thead>
           <tr className="border-b border-surface-container bg-surface-container-lowest">
             <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary">Tipo</th>
-            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden md:table-cell">Eventos</th>
+            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden md:table-cell">Procesos</th>
+            <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden md:table-cell">Carrera req.</th>
             <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary">Estado</th>
             <th className="px-6 py-4" />
           </tr>
@@ -62,7 +67,12 @@ export default function CertificateTypeTable({ types }: { types: CertType[] }) {
                 {t.description && <p className="text-xs text-secondary mt-0.5">{t.description}</p>}
               </td>
               <td className="px-6 py-4 hidden md:table-cell">
-                <span className="text-sm font-semibold text-on-surface">{t._count.events}</span>
+                <span className="text-sm font-semibold text-on-surface">{t._count.processes}</span>
+              </td>
+              <td className="px-6 py-4 hidden md:table-cell">
+                {t.requiresCareer
+                  ? <div title="Sí"><GraduationCap size={16} strokeWidth={1.75} className="text-primary-container" /></div>
+                  : <span className="text-secondary">—</span>}
               </td>
               <td className="px-6 py-4">
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${t.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-surface-container text-secondary'}`}>

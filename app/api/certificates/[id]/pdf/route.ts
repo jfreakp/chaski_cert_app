@@ -19,7 +19,7 @@ export async function GET(
     include: {
       student: { select: { name: true, dni: true } },
       career: { select: { name: true } },
-      event: {
+      process: {
         include: {
           institution: { select: { name: true } },
           certificateType: { select: { name: true } },
@@ -35,14 +35,15 @@ export async function GET(
     studentName: cert.student.name,
     studentDni: cert.student.dni,
     careerName: cert.career?.name ?? null,
-    eventName: cert.event.name,
-    eventDate: cert.event.date,
-    institutionName: cert.event.institution.name,
-    certificateTypeName: cert.event.certificateType.name,
+    eventName: cert.process.name,
+    eventDate: cert.process.date,
+    institutionName: cert.process.institution.name,
+    certificateTypeName: cert.process.certificateType.name,
     issuedAt: cert.issuedAt ?? cert.createdAt,
   })
 
-  const filename = `certificado-${cert.student.name.toLowerCase().replace(/\s+/g, '-')}.pdf`
+  const safeName = cert.student.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
+  const filename = `certificado-${safeName}.pdf`
 
   return new NextResponse(Buffer.from(pdfBytes), {
     headers: {

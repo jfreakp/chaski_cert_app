@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useActionState } from 'react'
 import { createCertificateType } from '@/app/actions/certificate-types'
-import { BadgeCheck, FileText, Loader2, Save } from 'lucide-react'
+import { BadgeCheck, FileText, GraduationCap, Loader2, Save } from 'lucide-react'
 
 export default function CertificateTypeForm() {
   const [state, action, pending] = useActionState(createCertificateType, undefined)
@@ -29,6 +29,20 @@ export default function CertificateTypeForm() {
               className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-transparent rounded-lg focus:ring-2 focus:ring-primary-container outline-none font-medium text-on-surface placeholder:text-outline/40 transition-all resize-none" />
           </div>
         </div>
+
+        <label className="flex items-center justify-between p-4 bg-surface-container-low rounded-lg cursor-pointer group">
+          <div className="flex items-center gap-3">
+            <GraduationCap size={18} strokeWidth={1.75} className="text-secondary group-has-[:checked]:text-primary-container transition-colors" />
+            <div>
+              <p className="text-sm font-semibold text-on-surface">Requiere carrera específica</p>
+              <p className="text-xs text-secondary mt-0.5">Los procesos de este tipo deben tener una carrera asignada.</p>
+            </div>
+          </div>
+          <div className="relative">
+            <input type="checkbox" name="requiresCareer" value="true" className="sr-only peer" />
+            <div className="w-11 h-6 bg-outline/30 rounded-full peer peer-checked:bg-primary-container after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+          </div>
+        </label>
 
         {state?.message && <div className="px-4 py-3 bg-error-container text-on-error-container text-sm font-medium rounded-lg">{state.message}</div>}
 

@@ -5,8 +5,8 @@ export interface CertHashInput {
   studentName: string
   studentDni: string
   careerName: string | null
-  eventName: string
-  eventDate: Date
+  processName: string
+  processDate: Date
   issuedAt: Date
   institutionName: string
   certificateTypeName: string
@@ -18,8 +18,8 @@ export function computeDataHash(input: CertHashInput): string {
     input.studentName,
     input.studentDni,
     input.careerName ?? '',
-    input.eventName,
-    input.eventDate.toISOString(),
+    input.processName,
+    input.processDate.toISOString(),
     input.issuedAt.toISOString(),
     input.institutionName,
     input.certificateTypeName,

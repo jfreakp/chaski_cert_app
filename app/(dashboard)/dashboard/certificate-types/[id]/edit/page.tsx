@@ -19,7 +19,12 @@ export default async function EditCertificateTypePage({ params }: { params: Prom
         <h1 className="text-4xl font-extrabold text-on-surface tracking-tighter">Editar Tipo</h1>
         <p className="text-secondary mt-2 text-sm">{type.name}</p>
       </div>
-      <EditCertificateTypeForm id={type.id} defaultName={type.name} defaultDescription={type.description} />
+      <EditCertificateTypeForm
+        id={type.id}
+        defaultName={type.name}
+        defaultDescription={type.description}
+        defaultRequiresCareer={type.requiresCareer}
+      />
     </div>
   )
 }
