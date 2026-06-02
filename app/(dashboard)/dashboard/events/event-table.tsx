@@ -62,7 +62,12 @@ export default function EventTable({ events, showInstitution, isAdmin }: { event
           {events.map((e) => (
             <tr key={e.id} className="hover:bg-surface-container-lowest/50 transition-colors">
               <td className="px-6 py-4">
-                <p className="font-semibold text-on-surface">{e.name}</p>
+                <Link
+                  href={`/dashboard/events/${e.id}`}
+                  className="font-semibold text-on-surface hover:text-primary-container transition-colors"
+                >
+                  {e.name}
+                </Link>
                 {e.location && <p className="text-xs text-secondary mt-0.5">{e.location}</p>}
               </td>
               <td className="px-6 py-4 hidden md:table-cell">
