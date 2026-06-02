@@ -95,26 +95,6 @@ model StudentEnrollment {
   @@unique([studentId, institutionId])
 }
 
-model User {
-  id               String       @id @default(uuid())
-  email            String       @unique
-  password         String
-  role             Role
-  isActive         Boolean      @default(true)
-  createdAt        DateTime     @default(now())
-
-  name             String?
-  position         String?
-
-  institutionId    String?
-  institution      Institution? @relation(fields: [institutionId], references: [id])
-
-  resetToken       String?      @unique
-  resetTokenExpiry DateTime?
-
-  issuedCertificates Certificate[]
-}
-
 enum CertificateStatus {
   PENDING
   ISSUED
@@ -141,4 +121,24 @@ model Certificate {
   issuedBy   User             @relation(fields: [issuedById], references: [id])
 
   @@unique([eventId, studentId])
+}
+
+model User {
+  id               String       @id @default(uuid())
+  email            String       @unique
+  password         String
+  role             Role
+  isActive         Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+
+  name             String?
+  position         String?
+
+  institutionId    String?
+  institution      Institution? @relation(fields: [institutionId], references: [id])
+
+  resetToken       String?      @unique
+  resetTokenExpiry DateTime?
+
+  issuedCertificates Certificate[]
 }
