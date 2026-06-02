@@ -30,7 +30,28 @@
       "Bash(xargs kill -9)",
       "Bash(pnpm db:reset)",
       "Bash(git -C /Users/juanpablotorres/Documents/myworks/chaski_cert_app status --short)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(mkdir -p \"/Users/juanpablotorres/Documents/myworks/chaski_cert_app/app/\\(dashboard\\)/dashboard/certificate-types/[id]/edit\")",
+      "Bash(mkdir -p \"/Users/juanpablotorres/Documents/myworks/chaski_cert_app/app/\\(dashboard\\)/dashboard/events/[id]/edit\")",
+      "Bash(git show *)",
+      "Bash(git -C /Users/juanpablotorres/Documents/myworks/chaski_cert_app log --oneline --all)",
+      "Bash(mkdir -p \"/Users/juanpablotorres/Documents/myworks/chaski_cert_app/app/\\(dashboard\\)/dashboard/events/[id]\")",
+      "Bash(mkdir -p \"/Users/juanpablotorres/Documents/myworks/chaski_cert_app/app/\\(dashboard\\)/dashboard/events/[id]/certificates/new\")",
+      "Bash(lsof -ti:3000)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"si\" pnpm db:reset)",
+      "Bash(pnpm db:seed *)",
+      "Bash(pnpm tsx *)",
+      "Bash(mkdir -p \"/Users/juanpablotorres/Documents/myworks/chaski_cert_app/app/\\(dashboard\\)/dashboard/processes/[id]/edit\")",
+      "Bash(mkdir -p \"/Users/juanpablotorres/Documents/myworks/chaski_cert_app/app/\\(dashboard\\)/dashboard/processes/[id]/participants/new\")",
+      "Bash(mkdir -p \"/Users/juanpablotorres/Documents/myworks/chaski_cert_app/app/\\(dashboard\\)/dashboard/processes/[id]/participants/import\")",
+      "Bash(psql *)",
+      "Bash(DATABASE_URL=postgresql://chaskicert:chaskicert_pass@localhost:5432/chaskicert pnpm prisma *)",
+      "Bash(DATABASE_URL=postgresql://chaskicert:chaskicert_pass@localhost:5432/chaskicert psql *)",
+      "Bash(DATABASE_URL=postgresql://chaskicert:chaskicert_pass@localhost:5432/chaskicert node *)",
+      "Bash(DATABASE_URL=postgresql://chaskicert:chaskicert_pass@localhost:5432/chaskicert pnpm exec *)",
+      "Bash(npx tsc *)",
+      "Bash(git stash *)"
     ]
   }
 }

@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ShieldCheck, Users, Building2, ChevronDown } from 'lucide-react'
+import { ShieldCheck, Users, Building2, BadgeCheck, ChevronDown } from 'lucide-react'
 
 const adminLinks = [
   { href: '/dashboard/institutions', icon: Building2, label: 'Instituciones' },
   { href: '/dashboard/users', icon: Users, label: 'Usuarios' },
+  { href: '/dashboard/certificate-types', icon: BadgeCheck, label: 'Tipos de Certificado' },
 ]
 
 export default function AdminMenu() {

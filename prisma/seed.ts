@@ -88,6 +88,23 @@ async function main() {
     console.log(`✅ ${created.role.padEnd(12)} → ${created.email}`)
   }
 
+  // ── Tipos de Certificado ─────────────────────────────────────────────────────
+  const certTypes = [
+    { name: 'Título de Grado', description: 'Certificado de graduación al terminar la carrera' },
+    { name: 'Congreso', description: 'Certificado de participación en congresos y conferencias' },
+    { name: 'Seminario', description: 'Certificado de asistencia a seminarios y talleres' },
+    { name: 'Curso', description: 'Certificado de aprobación de cursos de capacitación' },
+  ]
+
+  for (const ct of certTypes) {
+    await prisma.certificateType.upsert({
+      where: { name: ct.name },
+      update: {},
+      create: ct,
+    })
+    console.log(`📜 Tipo → ${ct.name}`)
+  }
+
   // ── Estudiantes ───────────────────────────────────────────────────────────────
 
   // Estudiante en ambas universidades con distintas carreras
