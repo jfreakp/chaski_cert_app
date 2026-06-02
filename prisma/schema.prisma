@@ -23,6 +23,7 @@ model Institution {
   users       User[]
   careers     Career[]
   enrollments StudentEnrollment[]
+  events      Event[]
 }
 
 model Career {
@@ -36,6 +37,32 @@ model Career {
   enrollments   StudentEnrollment[]
 
   @@unique([name, institutionId])
+}
+
+model CertificateType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  events      Event[]
+}
+
+model Event {
+  id                String          @id @default(uuid())
+  name              String
+  description       String?
+  date              DateTime
+  location          String?
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+
+  institutionId     String
+  institution       Institution     @relation(fields: [institutionId], references: [id])
+
+  certificateTypeId String
+  certificateType   CertificateType @relation(fields: [certificateTypeId], references: [id])
 }
 
 model Student {
