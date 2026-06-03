@@ -6,6 +6,7 @@ import { PROJECT_NAME } from '@/app/lib/config'
 import { CalendarDays, BadgeCheck, Plus, ArrowLeft, Upload } from 'lucide-react'
 import ParticipantTable from './participant-table'
 import CertificateTable from './certificate-table'
+import RegisterBlockchainButton from './register-blockchain-button'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -44,6 +45,11 @@ export default async function ProcessDetailPage({ params }: { params: Promise<{ 
   const pendingCount = proc.participants.filter(p =>
     !certifiedStudentIds.includes(p.studentId)
   ).length
+  const issuedCount = proc.certificates.filter(c => c.status === 'ISSUED').length
+
+  const polygonscanBaseUrl = process.env.NEXT_PUBLIC_BLOCKCHAIN_NETWORK === 'polygon'
+    ? 'https://polygonscan.com'
+    : 'https://amoy.polygonscan.com'
 
   return (
     <div className="px-6 py-8 max-w-7xl mx-auto">
@@ -71,6 +77,10 @@ export default async function ProcessDetailPage({ params }: { params: Promise<{ 
             </div>
             {proc.description && <p className="text-sm text-secondary mt-2">{proc.description}</p>}
           </div>
+
+          {isAdmin && (
+            <RegisterBlockchainButton processId={id} issuedCount={issuedCount} />
+          )}
 
           {!isAdmin && (
             <div className="flex gap-3">
@@ -117,7 +127,7 @@ export default async function ProcessDetailPage({ params }: { params: Promise<{ 
           pendingCount={pendingCount}
         />
         {proc.certificates.length > 0 && (
-          <CertificateTable certificates={proc.certificates} isAdmin={isAdmin} />
+          <CertificateTable certificates={proc.certificates} isAdmin={isAdmin} polygonscanBaseUrl={polygonscanBaseUrl} />
         )}
       </div>
     </div>

@@ -7,7 +7,6 @@ const universityRoutes = [
   '/dashboard/careers',
   '/dashboard/students/new',
   '/dashboard/processes/new',
-  '/dashboard/processes/',
 ]
 
 export default async function proxy(req: NextRequest) {

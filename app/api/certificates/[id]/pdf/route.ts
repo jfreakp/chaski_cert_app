@@ -30,6 +30,8 @@ export async function GET(
 
   if (!cert) return NextResponse.json({ error: 'No encontrado.' }, { status: 404 })
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
   const pdfBytes = await generateCertificatePdf({
     id: cert.id,
     studentName: cert.student.name,
@@ -40,6 +42,7 @@ export async function GET(
     institutionName: cert.process.institution.name,
     certificateTypeName: cert.process.certificateType.name,
     issuedAt: cert.issuedAt ?? cert.createdAt,
+    verifyUrl: `${appUrl}/verify/${cert.id}`,
   })
 
   const safeName = cert.student.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')

@@ -1,5 +1,6 @@
 import 'server-only'
 import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib'
+import QRCode from 'qrcode'
 
 const BRAND  = rgb(0.10, 0.20, 0.60)
 const DARK   = rgb(0.08, 0.08, 0.12)
@@ -17,6 +18,7 @@ export interface CertificatePdfData {
   institutionName: string
   certificateTypeName: string
   issuedAt: Date
+  verifyUrl: string
 }
 
 export async function generateCertificatePdf(cert: CertificatePdfData): Promise<Uint8Array> {
@@ -68,7 +70,7 @@ export async function generateCertificatePdf(cert: CertificatePdfData): Promise<
   // Institución
   page.drawText(cert.institutionName.toUpperCase(), {
     x: cx, y: height - 80, size: 9, font: fontBold,
-    color: GRAY, characterSpacing: 2,
+    color: GRAY,
   })
 
   // Título
@@ -107,8 +109,7 @@ export async function generateCertificatePdf(cert: CertificatePdfData): Promise<
   }
 
   // Evento
-  const eventLine = `participó en "${cert.eventName}"`
-  page.drawText(eventLine, {
+  page.drawText(`participó en "${cert.eventName}"`, {
     x: cx, y: height - 350, size: 11, font: fontRegular, color: DARK, maxWidth: 560,
   })
 
@@ -132,6 +133,15 @@ export async function generateCertificatePdf(cert: CertificatePdfData): Promise<
   })
   page.drawText(`ID: ${cert.id}`, {
     x: cx, y: height - 453, size: 7, font: fontRegular, color: rgb(0.7, 0.7, 0.75),
+  })
+
+  // QR de verificación — esquina inferior derecha
+  const qrPngBuffer = await QRCode.toBuffer(cert.verifyUrl, { width: 80, margin: 1 })
+  const qrImage = await doc.embedPng(qrPngBuffer)
+  const qrSize  = 70
+  page.drawImage(qrImage, { x: width - qrSize - 20, y: 20, width: qrSize, height: qrSize })
+  page.drawText('Verificar', {
+    x: width - qrSize - 20, y: 14, size: 6, font: fontRegular, color: GRAY,
   })
 
   return doc.save()

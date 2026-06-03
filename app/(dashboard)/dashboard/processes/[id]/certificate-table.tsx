@@ -1,11 +1,13 @@
 'use client'
 
-import { FileText, Download } from 'lucide-react'
+import { FileText, Download, ExternalLink } from 'lucide-react'
 
 type Certificate = {
   id: string
   status: 'PENDING' | 'ISSUED' | 'REGISTERED'
   issuedAt: Date | null
+  txHash: string | null
+  registeredAt: Date | null
   student: { name: string; dni: string }
   career: { name: string } | null
 }
@@ -24,9 +26,11 @@ const statusLabels: Record<Certificate['status'], string> = {
 export default function CertificateTable({
   certificates,
   isAdmin,
+  polygonscanBaseUrl,
 }: {
   certificates: Certificate[]
   isAdmin: boolean
+  polygonscanBaseUrl: string
 }) {
   return (
     <div>
@@ -41,7 +45,7 @@ export default function CertificateTable({
               <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary">Estudiante</th>
               <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden md:table-cell">Carrera</th>
               <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary">Estado</th>
-              <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden lg:table-cell">Fecha emisión</th>
+              <th className="text-left px-6 py-4 text-[10px] font-extrabold uppercase tracking-widest text-secondary hidden lg:table-cell">Emisión</th>
               <th className="px-6 py-4" />
             </tr>
           </thead>
@@ -56,10 +60,23 @@ export default function CertificateTable({
                   {c.career?.name ?? <span className="text-outline/60 italic">Sin carrera</span>}
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${statusStyles[c.status]}`}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                    {statusLabels[c.status]}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider w-fit ${statusStyles[c.status]}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                      {statusLabels[c.status]}
+                    </span>
+                    {c.status === 'REGISTERED' && c.txHash && (
+                      <a
+                        href={`${polygonscanBaseUrl}/tx/${c.txHash}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:underline"
+                      >
+                        <ExternalLink size={10} strokeWidth={2} />
+                        Ver en Polygonscan
+                      </a>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-secondary hidden lg:table-cell">
                   {c.issuedAt
