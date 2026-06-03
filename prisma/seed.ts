@@ -3,6 +3,7 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../app/generated/prisma/client'
 import bcrypt from 'bcryptjs'
+import { computeDataHash } from '../app/lib/certificate-hash'
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
@@ -156,12 +157,104 @@ async function main() {
   console.log(`🎓 Juan Carlos Pérez     → UTPL (${careerUtpl2.name})`)
   console.log(`🎓 Ana Lucía Romero      → UNL  (${careerUnl2.name})`)
 
+  // ── Estudiantes de prueba para portal ────────────────────────────────────────
+  const adminUser = await prisma.user.findUnique({ where: { email: 'admin@chaskicert.com' } })
+  const utplUser  = await prisma.user.findUnique({ where: { email: 'utpl@universidad.edu.ec' } })
+
+  const laura = await prisma.student.upsert({
+    where: { dni: '9901111111' },
+    update: { name: 'Laura Tapia Vargas', email: 'letawa2468@brixozu.com' },
+    create: { name: 'Laura Tapia Vargas', dni: '9901111111', email: 'letawa2468@brixozu.com' },
+  })
+
+  await prisma.studentEnrollment.upsert({
+    where: { studentId_institutionId: { studentId: laura.id, institutionId: utpl.id } },
+    update: {},
+    create: { studentId: laura.id, institutionId: utpl.id, careerId: careerUtpl1.id },
+  })
+
+  const diego = await prisma.student.upsert({
+    where: { dni: '9902222222' },
+    update: { name: 'Diego Paredes Ruiz', email: 'dp23r4w4j3@wnbaldwy.com' },
+    create: { name: 'Diego Paredes Ruiz', dni: '9902222222', email: 'dp23r4w4j3@wnbaldwy.com' },
+  })
+
+  await prisma.studentEnrollment.upsert({
+    where: { studentId_institutionId: { studentId: diego.id, institutionId: utpl.id } },
+    update: {},
+    create: { studentId: diego.id, institutionId: utpl.id, careerId: careerUtpl2.id },
+  })
+
+  // Proceso de prueba con certificados ISSUED para probar el portal
+  const seminarioType = await prisma.certificateType.findUnique({ where: { name: 'Seminario' } })
+
+  if (seminarioType && utplUser) {
+    const processDate = new Date('2026-05-15')
+    const issuedAt    = new Date('2026-05-20')
+
+    const testProcess = await prisma.certificateProcess.upsert({
+      where: { id: 'seed-test-process-portal-001' },
+      update: { name: 'Seminario de Innovación Tecnológica 2026' },
+      create: {
+        id: 'seed-test-process-portal-001',
+        name: 'Seminario de Innovación Tecnológica 2026',
+        description: 'Proceso de prueba para portal de estudiantes',
+        date: processDate,
+        institutionId: utpl.id,
+        certificateTypeId: seminarioType.id,
+      },
+    })
+
+    const certsData = [
+      { student: laura, career: careerUtpl1 },
+      { student: diego, career: careerUtpl2 },
+    ]
+
+    for (const { student, career } of certsData) {
+      const certId = `seed-cert-portal-${student.dni}`
+      const dataHash = computeDataHash({
+        id: certId,
+        studentName: student.name,
+        studentDni: student.dni,
+        careerName: career.name,
+        processName: testProcess.name,
+        processDate,
+        issuedAt,
+        institutionName: utpl.name,
+        certificateTypeName: seminarioType.name,
+      })
+
+      await prisma.certificate.upsert({
+        where: { id: certId },
+        update: { status: 'ISSUED', issuedAt, dataHash },
+        create: {
+          id: certId,
+          status: 'ISSUED',
+          dataHash,
+          issuedAt,
+          processId: testProcess.id,
+          studentId: student.id,
+          careerId: career.id,
+          issuedById: utplUser.id,
+        },
+      })
+    }
+
+    console.log(`🧪 Laura Tapia Vargas  → letawa2468@brixozu.com  (cert ISSUED)`)
+    console.log(`🧪 Diego Paredes Ruiz  → dp23r4w4j3@wnbaldwy.com (cert ISSUED)`)
+  }
+
   console.log('\n🎉 Seed completado.\n')
   console.log('Credenciales:')
   console.log('──────────────────────────────────────────────────────────')
   console.log('ADMIN      │ admin@chaskicert.com      │ Admin123!')
   console.log('UNIVERSITY │ utpl@universidad.edu.ec   │ University123!')
   console.log('UNIVERSITY │ unl@universidad.edu.ec    │ University123!')
+  console.log('──────────────────────────────────────────────────────────')
+  console.log('\nPortal estudiantes (magic link):')
+  console.log('──────────────────────────────────────────────────────────')
+  console.log('letawa2468@brixozu.com   → Laura Tapia Vargas')
+  console.log('dp23r4w4j3@wnbaldwy.com → Diego Paredes Ruiz')
   console.log('──────────────────────────────────────────────────────────')
 }
 

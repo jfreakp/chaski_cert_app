@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/app/lib/session'
+import { getStudentSession } from '@/app/lib/student-session'
 import { prisma } from '@/app/lib/prisma'
 import { generateCertificatePdf } from '@/app/lib/pdf'
 
@@ -8,7 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession()
-  if (!session?.userId) {
+  const studentSession = await getStudentSession()
+
+  if (!session?.userId && !studentSession?.studentId) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 401 })
   }
 
@@ -29,6 +32,13 @@ export async function GET(
   })
 
   if (!cert) return NextResponse.json({ error: 'No encontrado.' }, { status: 404 })
+
+  // Un estudiante solo puede descargar sus propios certificados
+  if (studentSession?.studentId && !session?.userId) {
+    if (cert.studentId !== studentSession.studentId) {
+      return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
+    }
+  }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 

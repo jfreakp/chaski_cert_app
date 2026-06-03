@@ -90,7 +90,7 @@ model Student {
   id          String   @id @default(uuid())
   name        String
   dni         String   @unique
-  email       String?
+  email       String   @unique
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
