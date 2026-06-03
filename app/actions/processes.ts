@@ -7,6 +7,7 @@ import { requireInstitution } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
 import { computeDataHash } from '@/app/lib/certificate-hash'
 import { sendCertificateRegisteredEmail } from '@/app/lib/email'
+import { createAuditLog } from '@/app/lib/audit'
 
 // ── CRUD ─────────────────────────────────────────────────────────────────────
 
@@ -256,6 +257,8 @@ export async function generateCertificates(processId: string) {
     include: { student: { select: { name: true, dni: true } } },
   })
 
+  let newCount = 0
+
   for (const p of participants) {
     const existing = await prisma.certificate.findUnique({
       where: { processId_studentId: { processId, studentId: p.studentId } },
@@ -293,7 +296,17 @@ export async function generateCertificates(processId: string) {
         issuedById: session.userId,
       },
     })
+
+    newCount++
   }
+
+  createAuditLog({
+    action: 'CERTIFICATES_ISSUED',
+    entityType: 'CertificateProcess',
+    entityId: processId,
+    metadata: { processId, processName: proc.name, count: newCount },
+    userId: session.userId,
+  })
 
   revalidatePath(`/dashboard/processes/${processId}`)
 }
@@ -325,7 +338,6 @@ export async function markCertificatesRegistered(processId: string, txHash: stri
     return { message: `Transacción confirmada (${txHash}) pero falló la actualización en DB. Guardá este txHash.` }
   }
 
-  // Consultar certificados recién registrados para enviar emails
   const registered = await prisma.certificate.findMany({
     where: { processId, txHash },
     include: {
@@ -344,6 +356,14 @@ export async function markCertificatesRegistered(processId: string, txHash: stri
   const polygonscanUrl = isAmoy
     ? `https://amoy.polygonscan.com/tx/${txHash}`
     : `https://polygonscan.com/tx/${txHash}`
+
+  createAuditLog({
+    action: 'BLOCKCHAIN_REGISTERED',
+    entityType: 'CertificateProcess',
+    entityId: processId,
+    metadata: { processId, txHash, count: registered.length },
+    userId: session.userId,
+  })
 
   await Promise.allSettled(
     registered.map(cert =>

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { verifySession } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
+import { createAuditLog } from '@/app/lib/audit'
 
 const StudentSchema = z.object({
   name:  z.string().min(2, { error: 'Mínimo 2 caracteres.' }).trim(),
@@ -31,6 +32,7 @@ export async function createStudent(
   state: StudentFormState,
   formData: FormData
 ): Promise<StudentFormState> {
+  const session       = await verifySession()
   const institutionId = await getInstitutionId()
   const careerId = (formData.get('careerId') as string) || null
 
@@ -46,14 +48,12 @@ export async function createStudent(
 
   const { name, dni, email } = validated.data
 
-  // Upsert estudiante (puede ya existir en otra universidad)
   const student = await prisma.student.upsert({
     where: { dni },
     update: { name, email },
     create: { name, dni, email },
   })
 
-  // Crear matrícula si no existe
   const existing = await prisma.studentEnrollment.findUnique({
     where: { studentId_institutionId: { studentId: student.id, institutionId } },
   })
@@ -66,6 +66,14 @@ export async function createStudent(
     data: { studentId: student.id, institutionId, careerId: careerId || null },
   })
 
+  createAuditLog({
+    action: 'STUDENT_CREATED',
+    entityType: 'Student',
+    entityId: student.id,
+    metadata: { studentName: name, studentDni: dni },
+    userId: session.userId,
+  })
+
   revalidatePath('/dashboard/students')
   redirect('/dashboard/students')
 }
@@ -75,7 +83,7 @@ export async function updateStudent(
   state: StudentFormState,
   formData: FormData
 ): Promise<StudentFormState> {
-  await verifySession()
+  const session = await verifySession()
   const careerId = (formData.get('careerId') as string) || null
 
   const validated = StudentSchema.safeParse({
@@ -96,7 +104,6 @@ export async function updateStudent(
   })
   if (!enrollment) return { message: 'Matrícula no encontrada.' }
 
-  // Verificar cédula no duplicada en otro estudiante
   const existing = await prisma.student.findUnique({ where: { dni } })
   if (existing && existing.id !== enrollment.studentId) {
     return { errors: { dni: ['Esta cédula ya pertenece a otro estudiante.'] } }
@@ -112,6 +119,14 @@ export async function updateStudent(
       data: { careerId: careerId || null },
     }),
   ])
+
+  createAuditLog({
+    action: 'STUDENT_UPDATED',
+    entityType: 'Student',
+    entityId: enrollment.studentId,
+    metadata: { studentName: name, studentDni: dni },
+    userId: session.userId,
+  })
 
   revalidatePath('/dashboard/students')
   return { success: true }

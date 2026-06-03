@@ -145,6 +145,18 @@ model Certificate {
   @@unique([processId, studentId])
 }
 
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+}
+
 model User {
   id               String       @id @default(uuid())
   email            String       @unique
@@ -163,4 +175,5 @@ model User {
   resetTokenExpiry DateTime?
 
   issuedCertificates Certificate[]
+  auditLogs  AuditLog[]
 }
