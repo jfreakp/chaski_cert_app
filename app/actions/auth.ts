@@ -16,6 +16,7 @@ import { createSession, deleteSession, refreshSession } from '@/app/lib/session'
 import { verifySession } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
 import { sendPasswordResetEmail } from '@/app/lib/email'
+import { createAuditLog } from '@/app/lib/audit'
 
 export async function login(
   state: LoginFormState,
@@ -48,6 +49,15 @@ export async function login(
   }
 
   await createSession(user.id, user.role, user.email, user.name)
+
+  createAuditLog({
+    action: 'USER_LOGIN',
+    entityType: 'User',
+    entityId: user.id,
+    metadata: { email },
+    userId: user.id,
+  })
+
   redirect('/dashboard')
 }
 
