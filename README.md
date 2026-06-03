@@ -24,15 +24,21 @@ app/
 │   │   ├── careers/               # CRUD carreras (solo UNIVERSITY)
 │   │   ├── students/              # Gestión estudiantes + CSV import
 │   │   ├── profile/               # Perfil del usuario
-│   │   └── no-institution/        # Error: UNIVERSITY sin institución
+│   │   ├── no-institution/        # Error: UNIVERSITY sin institución
+│   │   └── processes/[id]/        # Detalle de proceso + tabla de certificados + botón blockchain
 │   └── components/                # Sidebar, dropdown, admin-menu
-├── actions/                       # Server actions (auth, usuarios, instituciones, carreras, estudiantes)
-├── api/auth/                      # Route handlers (clear-session)
-└── lib/                           # Prisma client, sesión, DAL, email, config
+├── verify/[id]/                   # Página pública de verificación (sin login)
+├── actions/                       # Server actions (auth, usuarios, instituciones, carreras, estudiantes, procesos)
+├── api/
+│   ├── auth/                      # Route handlers (clear-session)
+│   └── certificates/[id]/pdf/     # Descarga de PDF con QR de verificación
+└── lib/                           # Prisma client, sesión, DAL, email, config, blockchain
 prisma/
 ├── schema.prisma
 ├── seed.ts
 └── migrations/
+contracts/
+└── CertificateRegistry.sol        # Smart contract Solidity (desplegar en Remix)
 ```
 
 ## Modelos
@@ -44,6 +50,9 @@ prisma/
 | `Student` | Estudiante (entidad global, identificado por cédula) |
 | `StudentEnrollment` | Matrícula: relación Student ↔ Institution + Career |
 | `User` | Usuarios de la plataforma |
+| `Certificate` | Certificado emitido; incluye `dataHash`, `txHash`, `registeredAt` para trazabilidad blockchain |
+
+**Estados de un certificado:** `PENDING` → `ISSUED` → `REGISTERED` (registrado en blockchain)
 
 ## Roles
 
@@ -100,7 +109,98 @@ NEXT_PUBLIC_APP_NAME=NombreDeTuPlataforma
 # Email (Gmail con App Password)
 GMAIL_USER=tu-cuenta@gmail.com
 GMAIL_APP_PASSWORD=
+
+# Blockchain (Polygon) — MetaMask firma directamente desde el browser, no se almacena ninguna clave
+NEXT_PUBLIC_BLOCKCHAIN_NETWORK=amoy        # "amoy" para testnet, "polygon" para mainnet
+NEXT_PUBLIC_AMOY_CONTRACT_ADDRESS=0x_DIRECCION_CONTRATO_AMOY
+NEXT_PUBLIC_POLYGON_CONTRACT_ADDRESS=0x_DIRECCION_CONTRATO_MAINNET
 ```
+
+## Configuración de Blockchain (Polygon)
+
+El registro en blockchain usa **MetaMask** — el admin firma la transacción directamente desde el navegador. No se almacena ninguna clave privada en el servidor.
+
+### Arquitectura
+
+- El admin firma con MetaMask desde el browser (la clave nunca sale del dispositivo)
+- Un solo contrato `CertificateRegistry` almacena todos los hashes de todas las instituciones
+- Cada certificado queda verificable públicamente en `/verify/[id]` sin login
+
+### Paso 1 — Configurar MetaMask
+
+1. Instalar [MetaMask](https://metamask.io/download) en el navegador del admin
+2. Agregar la red **Polygon Amoy** (testnet):
+
+| Campo | Valor |
+|-------|-------|
+| Nombre | Polygon Amoy |
+| RPC URL | `https://rpc-amoy.polygon.technology` |
+| Chain ID | `80002` |
+| Símbolo | POL |
+
+3. Conseguir POL de prueba en: https://faucet.polygon.technology
+
+### Paso 2 — Desplegar el contrato
+
+La wallet que despliega el contrato se convierte en su **owner** — solo esa wallet puede llamar `registerBatch`.
+
+**Desde la terminal** (requiere tener la private key de la wallet deployante):
+
+```bash
+node --input-type=module << 'EOF'
+import { createWalletClient, createPublicClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { polygonAmoy } from 'viem/chains'
+
+const PRIVATE_KEY = '0x<TU_PRIVATE_KEY>'
+const BYTECODE = '0x6080604052...' // compilar contracts/CertificateRegistry.sol en Remix → copiar bytecode
+
+const account = privateKeyToAccount(PRIVATE_KEY)
+const walletClient = createWalletClient({ account, chain: polygonAmoy, transport: http('https://rpc-amoy.polygon.technology') })
+const publicClient = createPublicClient({ chain: polygonAmoy, transport: http('https://rpc-amoy.polygon.technology') })
+
+const txHash = await walletClient.deployContract({ abi: [], bytecode: BYTECODE })
+const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+console.log('Contrato desplegado en:', receipt.contractAddress)
+EOF
+```
+
+### Paso 3 — Variables de entorno
+
+```env
+NEXT_PUBLIC_BLOCKCHAIN_NETWORK=amoy    # "amoy" para testnet, "polygon" para mainnet
+
+NEXT_PUBLIC_AMOY_CONTRACT_ADDRESS=0x<dirección del contrato en Amoy>
+NEXT_PUBLIC_POLYGON_CONTRACT_ADDRESS=0x<dirección del contrato en mainnet>
+```
+
+> No se necesita `BLOCKCHAIN_PRIVATE_KEY` — MetaMask firma directamente desde el browser.
+
+### Paso 4 — Configurar MetaMask del admin
+
+La cuenta de MetaMask que el admin use para registrar **debe ser la misma que desplegó el contrato** (el owner). Si la cuenta no está en MetaMask:
+
+1. MetaMask → selector de cuenta → **"+ Agregar cuenta o hardware wallet"**
+2. **"Importar cuenta"** → **"Clave privada"**
+3. Pegar la private key de la wallet deployante
+
+### Paso 5 — Cómo registrar certificados
+
+1. Ingresar como **ADMIN** → **Procesos** en el sidebar
+2. Entrar al detalle de un proceso con certificados emitidos
+3. Asegurarse de que MetaMask esté en la red **Amoy** y la cuenta **owner**
+4. Click en **"Registrar en Blockchain (N)"**
+5. MetaMask abre un popup para confirmar → aprobar la transacción
+6. El botón muestra el progreso: Conectando → Esperando firma → Confirmando
+
+Los `N` certificados se registran en una sola transacción. Cada uno queda verificable en `/verify/[id]`.
+
+### Recarga de saldo
+
+La wallet owner necesita POL para pagar gas (~0.0002 POL por batch). Monitorear en:
+`https://amoy.polygonscan.com/address/<WALLET_ADDRESS>`
+
+---
 
 ## Comandos
 

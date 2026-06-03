@@ -15,7 +15,7 @@ const mainLinks = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/students', icon: GraduationCap, label: 'Estudiantes' },
   { href: '/dashboard/careers', icon: BookOpen, label: 'Carreras', universityOnly: true },
-  { href: '/dashboard/processes', icon: ClipboardList, label: 'Procesos', universityOnly: true },
+  { href: '/dashboard/processes', icon: ClipboardList, label: 'Procesos' },
 ]
 
 export default async function DashboardLayout({

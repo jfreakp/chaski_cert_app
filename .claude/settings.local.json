@@ -51,7 +51,9 @@
       "Bash(DATABASE_URL=postgresql://chaskicert:chaskicert_pass@localhost:5432/chaskicert node *)",
       "Bash(DATABASE_URL=postgresql://chaskicert:chaskicert_pass@localhost:5432/chaskicert pnpm exec *)",
       "Bash(npx tsc *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(awk -F'=' '{print \"Empieza con 0x:\", substr\\($2,1,2\\) == \"0x\", \"| Largo:\", length\\($2\\)}')",
+      "Bash(python3 *)"
     ]
   }
 }

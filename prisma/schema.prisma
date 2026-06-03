@@ -125,8 +125,10 @@ model Certificate {
   id        String            @id @default(uuid())
   status    CertificateStatus @default(PENDING)
   dataHash  String            @unique
-  issuedAt  DateTime?
-  createdAt DateTime          @default(now())
+  issuedAt     DateTime?
+  txHash       String?
+  registeredAt DateTime?
+  createdAt    DateTime          @default(now())
 
   processId  String
   process    CertificateProcess @relation(fields: [processId], references: [id])

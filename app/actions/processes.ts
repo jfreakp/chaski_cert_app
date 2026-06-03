@@ -296,3 +296,34 @@ export async function generateCertificates(processId: string) {
 
   revalidatePath(`/dashboard/processes/${processId}`)
 }
+
+// ── Registro en Blockchain ────────────────────────────────────────────────────────────
+
+export async function getIssuedHashes(processId: string): Promise<{ hashes: string[] }> {
+  const { session } = await requireInstitution()
+  if (session.role !== 'ADMIN') return { hashes: [] }
+
+  const certs = await prisma.certificate.findMany({
+    where: { processId, status: 'ISSUED' },
+    select: { dataHash: true },
+  })
+
+  return { hashes: certs.map(c => c.dataHash) }
+}
+
+export async function markCertificatesRegistered(processId: string, txHash: string): Promise<{ message?: string }> {
+  const { session } = await requireInstitution()
+  if (session.role !== 'ADMIN') return { message: 'Solo administradores.' }
+
+  try {
+    await prisma.certificate.updateMany({
+      where: { processId, status: 'ISSUED' },
+      data: { status: 'REGISTERED', txHash, registeredAt: new Date() },
+    })
+  } catch {
+    return { message: `Transacción confirmada (${txHash}) pero falló la actualización en DB. Guardá este txHash.` }
+  }
+
+  revalidatePath(`/dashboard/processes/${processId}`)
+  return {}
+}
