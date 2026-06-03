@@ -21,21 +21,28 @@ app/
 │   ├── dashboard/
 │   │   ├── institutions/          # CRUD instituciones (solo ADMIN)
 │   │   ├── users/                 # CRUD usuarios (solo ADMIN)
+│   │   ├── certificate-types/     # CRUD tipos de certificado (solo ADMIN)
+│   │   ├── audit/                 # Log de auditoría con filtros (solo ADMIN)
 │   │   ├── careers/               # CRUD carreras (solo UNIVERSITY)
 │   │   ├── students/              # Gestión estudiantes + CSV import
+│   │   ├── processes/             # Listado de procesos de certificación
+│   │   ├── processes/[id]/        # Detalle de proceso + tabla de certificados + botón blockchain
 │   │   ├── profile/               # Perfil del usuario
-│   │   ├── no-institution/        # Error: UNIVERSITY sin institución
-│   │   └── processes/[id]/        # Detalle de proceso + tabla de certificados + botón blockchain
+│   │   ├── settings/              # Configuración de cuenta
+│   │   └── no-institution/        # Error: UNIVERSITY sin institución asignada
 │   └── components/                # Sidebar, dropdown, admin-menu
+├── (portal)/
+│   └── portal/
+│       ├── login/                 # Formulario de magic link (email)
+│       ├── login/verify/          # Route handler: valida token y crea sesión
+│       └── profile/               # Datos personales del estudiante (solo lectura)
+│       # page.tsx                 # Lista de certificados, descarga PDF, link de verificación
 ├── verify/[id]/                   # Página pública de verificación (sin login)
-├── portal/                        # Portal del estudiante (magic link)
-│   ├── login/                     # Formulario de email + verify token
-│   └── profile/                   # Datos personales (solo lectura)
 ├── actions/                       # Server actions (auth, usuarios, instituciones, carreras, estudiantes, procesos)
 ├── api/
 │   ├── auth/                      # Route handlers (clear-session)
-│   └── certificates/[id]/pdf/     # Descarga de PDF con QR de verificación
-└── lib/                           # Prisma client, sesión, DAL, email, config, blockchain
+│   └── certificates/[id]/pdf/     # Genera y descarga PDF del certificado con QR
+└── lib/                           # Prisma client, sesión, DAL, email, pdf, config, blockchain, audit
 prisma/
 ├── schema.prisma
 ├── seed.ts
@@ -50,20 +57,26 @@ contracts/
 |--------|-------------|
 | `Institution` | Universidades e instituciones |
 | `Career` | Carreras ligadas a una institución |
-| `Student` | Estudiante (entidad global, identificado por cédula) |
+| `CertificateType` | Tipos de certificado (ej: Participación, Aprobación) |
+| `CertificateProcess` | Proceso de certificación: agrupa un evento, institución, tipo y lista de participantes |
+| `ProcessParticipant` | Relación entre un proceso y un estudiante participante |
+| `Student` | Estudiante (entidad global, identificado por cédula/DNI) |
 | `StudentEnrollment` | Matrícula: relación Student ↔ Institution + Career |
-| `User` | Usuarios de la plataforma |
+| `User` | Usuarios de la plataforma (ADMIN / UNIVERSITY) |
 | `Certificate` | Certificado emitido; incluye `dataHash`, `txHash`, `registeredAt` para trazabilidad blockchain |
+| `AuditLog` | Registro de operaciones críticas: emisión, blockchain, login, alta/edición de estudiantes |
 
-**Estados de un certificado:** `PENDING` → `ISSUED` → `REGISTERED` (registrado en blockchain)
+**Estados de un certificado:** `ISSUED` → `REGISTERED` (registrado en blockchain)
+
+> `PENDING` existe en el enum pero no se usa en el flujo actual — los certificados se crean directamente en `ISSUED`.
 
 ## Roles
 
 | Rol | Descripción |
 |-----|-------------|
-| `ADMIN` | Gestión completa: usuarios, instituciones |
-| `UNIVERSITY` | Gestión de carreras, estudiantes e importación CSV de su institución |
-| `Estudiante` | Accede vía magic link a `/portal` — ve sus certificados, descarga PDFs, comparte links de verificación |
+| `ADMIN` | Gestión completa: instituciones, usuarios, tipos de certificado, auditoría |
+| `UNIVERSITY` | Gestión de carreras, estudiantes, procesos de certificación e importación CSV de su institución |
+| `Estudiante` | Sin cuenta — accede vía magic link a `/portal`: ve sus certificados, descarga PDFs, comparte links de verificación |
 
 ## Requisitos
 
@@ -202,6 +215,8 @@ La cuenta de MetaMask que el admin use para registrar **debe ser la misma que de
 6. El botón muestra el progreso: Conectando → Esperando firma → Confirmando
 
 Los `N` certificados se registran en una sola transacción. Cada uno queda verificable en `/verify/[id]`.
+
+Al completarse el registro, cada estudiante recibe automáticamente un **email de notificación** con el link a su portal y el enlace a Polygonscan para ver la transacción.
 
 ### Recarga de saldo
 
