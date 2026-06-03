@@ -9,7 +9,7 @@ import { prisma } from '@/app/lib/prisma'
 const StudentSchema = z.object({
   name:  z.string().min(2, { error: 'Mínimo 2 caracteres.' }).trim(),
   dni:   z.string().min(5, { error: 'Cédula inválida.' }).trim(),
-  email: z.email({ error: 'Correo inválido.' }).trim().optional().or(z.literal('')),
+  email: z.email({ error: 'Correo inválido.' }).trim(),
 })
 
 type StudentFormState =
@@ -37,7 +37,7 @@ export async function createStudent(
   const validated = StudentSchema.safeParse({
     name:  formData.get('name'),
     dni:   formData.get('dni'),
-    email: formData.get('email') || undefined,
+    email: formData.get('email'),
   })
 
   if (!validated.success) {
@@ -49,8 +49,8 @@ export async function createStudent(
   // Upsert estudiante (puede ya existir en otra universidad)
   const student = await prisma.student.upsert({
     where: { dni },
-    update: { name, email: email || null },
-    create: { name, dni, email: email || null },
+    update: { name, email },
+    create: { name, dni, email },
   })
 
   // Crear matrícula si no existe
@@ -81,7 +81,7 @@ export async function updateStudent(
   const validated = StudentSchema.safeParse({
     name:  formData.get('name'),
     dni:   formData.get('dni'),
-    email: formData.get('email') || undefined,
+    email: formData.get('email'),
   })
 
   if (!validated.success) {
@@ -105,7 +105,7 @@ export async function updateStudent(
   await Promise.all([
     prisma.student.update({
       where: { id: enrollment.studentId },
-      data: { name, dni, email: email || null },
+      data: { name, dni, email },
     }),
     prisma.studentEnrollment.update({
       where: { id: enrollmentId },
@@ -154,15 +154,15 @@ export async function importStudentsFromCSV(
     const cols = rows[i].split(',').map((c) => c.trim().replace(/^"|"$/g, ''))
     const [name, dni, email] = cols
 
-    if (!name || !dni) { errs.push(`Fila ${i + 2}: nombre y cédula son obligatorios.`); continue }
+    if (!name || !dni || !email) { errs.push(`Fila ${i + 2}: nombre, cédula y email son obligatorios.`); continue }
 
-    const validated = StudentSchema.safeParse({ name, dni, email: email || undefined })
+    const validated = StudentSchema.safeParse({ name, dni, email })
     if (!validated.success) { errs.push(`Fila ${i + 2}: datos inválidos.`); continue }
 
     const student = await prisma.student.upsert({
       where: { dni: validated.data.dni },
-      update: { name: validated.data.name, email: validated.data.email || null },
-      create: { name: validated.data.name, dni: validated.data.dni, email: validated.data.email || null },
+      update: { name: validated.data.name, email: validated.data.email },
+      create: { name: validated.data.name, dni: validated.data.dni, email: validated.data.email },
     })
 
     await prisma.studentEnrollment.upsert({

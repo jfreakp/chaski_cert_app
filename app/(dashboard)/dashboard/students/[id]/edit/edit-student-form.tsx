@@ -11,7 +11,7 @@ type Props = {
   enrollmentId: string
   defaultName: string
   defaultDni: string
-  defaultEmail: string | null
+  defaultEmail: string
   defaultCareerId: string | null
   careers: Career[]
 }
@@ -45,10 +45,10 @@ export default function EditStudentForm({ enrollmentId, defaultName, defaultDni,
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-secondary">Correo</label>
+            <label className="text-[10px] font-extrabold uppercase tracking-widest text-secondary">Correo *</label>
             <div className="relative">
               <AtSign size={16} strokeWidth={1.75} className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary" />
-              <input name="email" type="email" defaultValue={defaultEmail ?? ''}
+              <input name="email" type="email" required defaultValue={defaultEmail}
                 className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-transparent rounded-lg focus:ring-2 focus:ring-primary-container outline-none font-medium text-on-surface transition-all" />
             </div>
             {state?.errors?.email && <p className="text-xs text-error">{state.errors.email[0]}</p>}

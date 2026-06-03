@@ -28,6 +28,9 @@ app/
 │   │   └── processes/[id]/        # Detalle de proceso + tabla de certificados + botón blockchain
 │   └── components/                # Sidebar, dropdown, admin-menu
 ├── verify/[id]/                   # Página pública de verificación (sin login)
+├── portal/                        # Portal del estudiante (magic link)
+│   ├── login/                     # Formulario de email + verify token
+│   └── profile/                   # Datos personales (solo lectura)
 ├── actions/                       # Server actions (auth, usuarios, instituciones, carreras, estudiantes, procesos)
 ├── api/
 │   ├── auth/                      # Route handlers (clear-session)
@@ -60,6 +63,7 @@ contracts/
 |-----|-------------|
 | `ADMIN` | Gestión completa: usuarios, instituciones |
 | `UNIVERSITY` | Gestión de carreras, estudiantes e importación CSV de su institución |
+| `Estudiante` | Accede vía magic link a `/portal` — ve sus certificados, descarga PDFs, comparte links de verificación |
 
 ## Requisitos
 
@@ -114,6 +118,10 @@ GMAIL_APP_PASSWORD=
 NEXT_PUBLIC_BLOCKCHAIN_NETWORK=amoy        # "amoy" para testnet, "polygon" para mainnet
 NEXT_PUBLIC_AMOY_CONTRACT_ADDRESS=0x_DIRECCION_CONTRATO_AMOY
 NEXT_PUBLIC_POLYGON_CONTRACT_ADDRESS=0x_DIRECCION_CONTRATO_MAINNET
+
+# Portal Estudiante
+STUDENT_SESSION_DAYS=7       # duración de la cookie de sesión del estudiante (default: 7)
+MAGIC_LINK_MINUTES=15        # tiempo de vida del magic link enviado al email (default: 15)
 ```
 
 ## Configuración de Blockchain (Polygon)

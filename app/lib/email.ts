@@ -136,3 +136,42 @@ export async function sendPasswordResetEmail(to: string, name: string | null, re
     html: baseTemplate(content),
   })
 }
+
+export async function sendMagicLinkEmail(to: string, name: string, magicUrl: string) {
+  const minutes = process.env.MAGIC_LINK_MINUTES ?? '15'
+
+  const content = `
+    <h1 style="margin:0 0 8px;font-size:28px;font-weight:900;color:#1a1a2e;letter-spacing:-1px;">
+      Tu link de acceso
+    </h1>
+    <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.6;">
+      Hola <strong>${name}</strong>, solicitaste acceso a tu portal de certificados.
+    </p>
+    <p style="margin:0 0 32px;font-size:14px;color:#444;line-height:1.7;">
+      Hacé clic en el botón para ingresar. Este enlace expirará en <strong>${minutes} minutos</strong>.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
+      <tr>
+        <td style="background:#1a1a2e;border-radius:8px;padding:16px 32px;">
+          <a href="${magicUrl}" style="color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;">
+            Ingresar a mis certificados →
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 16px;font-size:12px;color:#999;">
+      Si no solicitaste este acceso, podés ignorar este correo.
+    </p>
+    <p style="margin:0;font-size:12px;color:#999;line-height:1.6;">
+      Si no podés hacer clic en el botón, copiá y pegá esta URL:<br/>
+      <span style="color:#1a1a2e;word-break:break-all;">${magicUrl}</span>
+    </p>
+  `
+
+  await transporter.sendMail({
+    from: `"${PROJECT_NAME}" <${process.env.GMAIL_USER}>`,
+    to,
+    subject: `Tu link de acceso — ${PROJECT_NAME}`,
+    html: baseTemplate(content),
+  })
+}
