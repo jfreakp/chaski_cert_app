@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { requireInstitution } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
 import { computeDataHash } from '@/app/lib/certificate-hash'
+import { sendCertificateRegisteredEmail } from '@/app/lib/email'
 
 // ── CRUD ─────────────────────────────────────────────────────────────────────
 
@@ -323,6 +324,38 @@ export async function markCertificatesRegistered(processId: string, txHash: stri
   } catch {
     return { message: `Transacción confirmada (${txHash}) pero falló la actualización en DB. Guardá este txHash.` }
   }
+
+  // Consultar certificados recién registrados para enviar emails
+  const registered = await prisma.certificate.findMany({
+    where: { processId, txHash },
+    include: {
+      student: { select: { name: true, email: true } },
+      process: {
+        include: {
+          institution:     { select: { name: true } },
+          certificateType: { select: { name: true } },
+        },
+      },
+    },
+  })
+
+  const appUrl         = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const isAmoy         = process.env.NEXT_PUBLIC_BLOCKCHAIN_NETWORK !== 'polygon'
+  const polygonscanUrl = isAmoy
+    ? `https://amoy.polygonscan.com/tx/${txHash}`
+    : `https://polygonscan.com/tx/${txHash}`
+
+  await Promise.allSettled(
+    registered.map(cert =>
+      sendCertificateRegisteredEmail(cert.student.email, cert.student.name, {
+        certificateTypeName: cert.process.certificateType.name,
+        processName:         cert.process.name,
+        institutionName:     cert.process.institution.name,
+        portalUrl:           `${appUrl}/portal`,
+        polygonscanUrl,
+      })
+    )
+  )
 
   revalidatePath(`/dashboard/processes/${processId}`)
   return {}

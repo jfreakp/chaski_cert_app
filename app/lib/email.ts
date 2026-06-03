@@ -175,3 +175,58 @@ export async function sendMagicLinkEmail(to: string, name: string, magicUrl: str
     html: baseTemplate(content),
   })
 }
+
+export async function sendCertificateRegisteredEmail(
+  to: string,
+  studentName: string,
+  data: {
+    certificateTypeName: string
+    processName: string
+    institutionName: string
+    portalUrl: string
+    polygonscanUrl: string
+  }
+) {
+  const content = `
+    <h1 style="margin:0 0 8px;font-size:28px;font-weight:900;color:#1a1a2e;letter-spacing:-1px;">
+      Tu certificado está en blockchain
+    </h1>
+    <p style="margin:0 0 24px;font-size:14px;color:#666;line-height:1.6;">
+      Hola <strong>${studentName}</strong>, tu certificado ha sido registrado de forma permanente en la red Polygon.
+    </p>
+    <table style="width:100%;border-collapse:collapse;margin:0 0 28px;border-radius:8px;overflow:hidden;">
+      <tr style="background:#f5f5f5;">
+        <td style="padding:10px 16px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;width:40%;">Tipo</td>
+        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#1a1a2e;">${data.certificateTypeName}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;">Proceso</td>
+        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#1a1a2e;">${data.processName}</td>
+      </tr>
+      <tr style="background:#f5f5f5;">
+        <td style="padding:10px 16px;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;">Institución</td>
+        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#1a1a2e;">${data.institutionName}</td>
+      </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+      <tr>
+        <td style="background:#1a1a2e;border-radius:8px;padding:16px 32px;">
+          <a href="${data.portalUrl}" style="color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;">
+            Ver mi certificado →
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0;font-size:12px;color:#999;line-height:1.6;">
+      También podés verificar la transacción on-chain:<br/>
+      <a href="${data.polygonscanUrl}" style="color:#1a1a2e;word-break:break-all;">${data.polygonscanUrl}</a>
+    </p>
+  `
+
+  await transporter.sendMail({
+    from: `"${PROJECT_NAME}" <${process.env.GMAIL_USER}>`,
+    to,
+    subject: `Tu certificado fue registrado en blockchain — ${PROJECT_NAME}`,
+    html: baseTemplate(content),
+  })
+}
