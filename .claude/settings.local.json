@@ -58,7 +58,8 @@
       "Bash(git pull *)",
       "Bash(git merge *)",
       "Bash(awk *)",
-      "Bash(git -C /Users/juanpablotorres/Documents/myworks/chaski_cert_app diff --stat HEAD)"
+      "Bash(git -C /Users/juanpablotorres/Documents/myworks/chaski_cert_app diff --stat HEAD)",
+      "Bash(open *)"
     ]
   }
 }

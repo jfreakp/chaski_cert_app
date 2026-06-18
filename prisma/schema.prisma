@@ -58,6 +58,9 @@ model CertificateProcess {
   description       String?
   date              DateTime
   isActive          Boolean  @default(true)
+  templateKey       String?
+  nameX             Float?
+  nameY             Float?
   createdAt         DateTime @default(now())
 
   institutionId     String
