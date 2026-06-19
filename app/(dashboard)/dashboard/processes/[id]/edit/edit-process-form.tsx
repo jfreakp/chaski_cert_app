@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useActionState } from 'react'
 import { updateProcess } from '@/app/actions/processes'
-import { CalendarDays, BadgeCheck, BookOpen, FileText, Loader2, Save, CheckCircle2 } from 'lucide-react'
+import { CalendarDays, BadgeCheck, BookOpen, FileText, Loader2, Save } from 'lucide-react'
 
 type CertType = { id: string; name: string; requiresCareer: boolean }
 type Career = { id: string; name: string }
@@ -87,7 +87,6 @@ export default function EditProcessForm({ processId, defaultName, defaultDescrip
         </div>
 
         {state?.message && !state.success && <div className="px-4 py-3 bg-error-container text-on-error-container text-sm font-medium rounded-lg">{state.message}</div>}
-        {state?.success && <div className="px-4 py-3 bg-emerald-50 text-emerald-700 text-sm font-medium rounded-lg flex items-center gap-2"><CheckCircle2 size={16} strokeWidth={2} />Proceso actualizado.</div>}
 
         <div className="flex justify-end items-center gap-4 pt-2">
           <Link href={`/dashboard/processes/${processId}`} className="text-sm font-bold text-secondary hover:text-on-surface transition-colors">Cancelar</Link>

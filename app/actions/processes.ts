@@ -38,7 +38,7 @@ export async function createProcess(state: ProcessFormState, formData: FormData)
   })
   if (!validated.success) return { errors: validated.error.flatten().fieldErrors as ProcessErrors }
 
-  await prisma.certificateProcess.create({
+  const proc = await prisma.certificateProcess.create({
     data: {
       name:              validated.data.name,
       description:       validated.data.description || null,
@@ -50,11 +50,19 @@ export async function createProcess(state: ProcessFormState, formData: FormData)
   })
 
   revalidatePath('/dashboard/processes')
-  redirect('/dashboard/processes')
+  redirect(`/dashboard/processes/${proc.id}/participants/new`)
 }
 
 export async function updateProcess(id: string, state: ProcessFormState, formData: FormData): Promise<ProcessFormState> {
-  await requireInstitution()
+  const { institutionId } = await requireInstitution()
+
+  const existing = await prisma.certificateProcess.findUnique({
+    where: { id },
+    select: { institutionId: true },
+  })
+  if (!existing || existing.institutionId !== institutionId) {
+    return { message: 'No autorizado.' }
+  }
 
   const validated = ProcessSchema.safeParse({
     name:              formData.get('name'),
@@ -77,7 +85,7 @@ export async function updateProcess(id: string, state: ProcessFormState, formDat
   })
 
   revalidatePath('/dashboard/processes')
-  return { success: true }
+  redirect(`/dashboard/processes/${id}/participants/new`)
 }
 
 export async function toggleProcessStatus(id: string) {
@@ -145,27 +153,15 @@ export async function removeParticipant(id: string) {
   revalidatePath(`/dashboard/processes/${participant.processId}`)
 }
 
-// ── Import CSV ────────────────────────────────────────────────────────────────
-
-export type ImportError = {
-  fila: number
-  dni: string
-  nombre: string
-  motivo: string
-}
-
-export type ImportResult = {
-  agregados: number
-  duplicados: number
-  errores: ImportError[]
-}
-
-export async function importParticipants(
+export async function addParticipants(
   processId: string,
   _: unknown,
   formData: FormData
-): Promise<{ result?: ImportResult; message?: string }> {
+): Promise<{ message?: string } | undefined> {
   const { institutionId } = await requireInstitution()
+
+  const studentIds = formData.getAll('studentId') as string[]
+  if (!studentIds.length) return { message: 'Selecciona al menos un estudiante.' }
 
   const proc = await prisma.certificateProcess.findUnique({
     where: { id: processId },
@@ -173,69 +169,26 @@ export async function importParticipants(
   })
   if (!proc || proc.institutionId !== institutionId) return { message: 'Proceso no encontrado.' }
 
-  const file = formData.get('file') as File | null
-  if (!file) return { message: 'Selecciona un archivo.' }
+  const enrollments = await prisma.studentEnrollment.findMany({
+    where: { institutionId: institutionId!, studentId: { in: studentIds } },
+    select: { studentId: true, careerId: true },
+  })
+  const enrolledMap = new Map(enrollments.map(e => [e.studentId, e.careerId]))
+  const validIds = studentIds.filter(id => {
+    if (!enrolledMap.has(id)) return false
+    if (proc.careerId && enrolledMap.get(id) !== proc.careerId) return false
+    return true
+  })
 
-  const text = await file.text()
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
-  if (lines.length < 2) return { message: 'El archivo está vacío o no tiene datos.' }
+  if (!validIds.length) return { message: 'Ningún estudiante válido seleccionado.' }
 
-  const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''))
-  const dniIdx    = header.findIndex(h => h === 'dni' || h === 'cedula' || h === 'cédula')
-  const nombreIdx = header.findIndex(h => h.includes('nombre') || h.includes('name'))
-
-  if (dniIdx === -1) return { message: 'El archivo debe tener una columna "DNI".' }
-
-  const result: ImportResult = { agregados: 0, duplicados: 0, errores: [] }
-
-  for (let i = 1; i < lines.length; i++) {
-    const cols   = lines[i].split(',').map(c => c.trim().replace(/['"]/g, ''))
-    const dni    = cols[dniIdx]?.trim()
-    const nombre = nombreIdx !== -1 ? (cols[nombreIdx]?.trim() || '') : ''
-
-    if (!dni) {
-      result.errores.push({ fila: i + 1, dni: '', nombre, motivo: 'DNI vacío.' })
-      continue
-    }
-
-    // 1. Verificar que el estudiante existe en la DB
-    const student = await prisma.student.findUnique({ where: { dni } })
-    if (!student) {
-      result.errores.push({ fila: i + 1, dni, nombre, motivo: 'Estudiante no encontrado en el sistema.' })
-      continue
-    }
-
-    // 2. Verificar matrícula en la institución
-    const enrollment = await prisma.studentEnrollment.findUnique({
-      where: { studentId_institutionId: { studentId: student.id, institutionId: institutionId! } },
-      select: { careerId: true },
-    })
-    if (!enrollment) {
-      result.errores.push({ fila: i + 1, dni, nombre: student.name, motivo: 'No matriculado en esta institución.' })
-      continue
-    }
-
-    // 3. Si el proceso tiene carrera, verificar que el estudiante esté en esa carrera
-    if (proc.careerId && enrollment.careerId !== proc.careerId) {
-      result.errores.push({ fila: i + 1, dni, nombre: student.name, motivo: 'No matriculado en la carrera del proceso.' })
-      continue
-    }
-
-    // 4. Verificar duplicado en el proceso
-    const existingP = await prisma.processParticipant.findUnique({
-      where: { processId_studentId: { processId, studentId: student.id } },
-    })
-    if (existingP) {
-      result.duplicados++
-      continue
-    }
-
-    await prisma.processParticipant.create({ data: { processId, studentId: student.id } })
-    result.agregados++
-  }
+  await prisma.processParticipant.createMany({
+    data: validIds.map(studentId => ({ processId, studentId })),
+    skipDuplicates: true,
+  })
 
   revalidatePath(`/dashboard/processes/${processId}`)
-  return { result }
+  redirect(`/dashboard/processes/${processId}`)
 }
 
 // ── Generar Certificados ──────────────────────────────────────────────────────

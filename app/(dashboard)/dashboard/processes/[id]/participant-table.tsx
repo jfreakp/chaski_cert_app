@@ -69,7 +69,7 @@ export default function ParticipantTable({
         <div className="bg-white rounded-xl shadow-sm p-12 text-center text-secondary border border-surface-container">
           <Users size={40} strokeWidth={1} className="text-outline/40 mb-3 mx-auto" />
           <p className="text-sm font-medium">No hay participantes en este proceso.</p>
-          {!isAdmin && <p className="text-xs mt-1">Agrega estudiantes con el botón "Agregar Estudiante" o importa un CSV.</p>}
+          {!isAdmin && <p className="text-xs mt-1">Usa el botón "Agregar Estudiante" para añadir participantes.</p>}
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-surface-container">

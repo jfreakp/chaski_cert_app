@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { requireInstitution } from '@/app/lib/dal'
 import { prisma } from '@/app/lib/prisma'
 import { PROJECT_NAME } from '@/app/lib/config'
-import { CalendarDays, BadgeCheck, Plus, ArrowLeft, Upload } from 'lucide-react'
+import { CalendarDays, BadgeCheck, Plus, ArrowLeft } from 'lucide-react'
 import ParticipantTable from './participant-table'
 import CertificateTable from './certificate-table'
 import RegisterBlockchainButton from './register-blockchain-button'
@@ -84,11 +84,6 @@ export default async function ProcessDetailPage({ params }: { params: Promise<{ 
 
           {!isAdmin && (
             <div className="flex gap-3">
-              <Link href={`/dashboard/processes/${id}/participants/import`}
-                className="inline-flex items-center gap-2 border border-primary-container text-primary-container hover:bg-primary-container/5 font-bold py-3 px-5 rounded-lg transition-all text-sm">
-                <Upload size={16} strokeWidth={1.75} />
-                Importar CSV
-              </Link>
               <Link href={`/dashboard/processes/${id}/participants/new`}
                 className="inline-flex items-center gap-2 bg-primary-container hover:bg-primary text-white font-bold py-3 px-5 rounded-lg transition-all shadow-lg shadow-primary-container/20 text-sm">
                 <Plus size={16} strokeWidth={1.75} />

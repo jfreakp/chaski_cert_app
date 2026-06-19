@@ -59,7 +59,22 @@
       "Bash(git merge *)",
       "Bash(awk *)",
       "Bash(git -C /Users/juanpablotorres/Documents/myworks/chaski_cert_app diff --stat HEAD)",
-      "Bash(open *)"
+      "Bash(open *)",
+      "Bash(git -C /Users/juanpablotorres/Documents/myworks/chaski_cert_app rev-parse --git-path sdd)",
+      "Bash(cat \"$\\(git -C /Users/juanpablotorres/Documents/myworks/chaski_cert_app rev-parse --git-path sdd\\)/progress.md\")",
+      "Bash(git *)",
+      "Bash(bash *)",
+      "Bash(pnpm build *)",
+      "Bash(xargs -I{} git diff --no-index /dev/null {})",
+      "Bash(diff /dev/null \"app/\\(dashboard\\)/dashboard/processes/[id]/participants/new/student-picker-table.tsx\")",
+      "Bash(cat \"/Users/juanpablotorres/Documents/myworks/chaski_cert_app/app/\\(dashboard\\)/dashboard/processes/[id]/participants/new/student-picker-table.tsx\")",
+      "Bash(git diff *)",
+      "Bash(echo \"---DELETED---\")",
+      "Bash(git status *)",
+      "Bash(cat \"app/\\(dashboard\\)/dashboard/processes/[id]/participants/new/student-picker-filters.tsx\")",
+      "Bash(echo \"---NEW-FILE-2---\")",
+      "Bash(cat \"app/\\(dashboard\\)/dashboard/processes/[id]/participants/new/student-picker-table.tsx\")",
+      "Skill(code-review)"
     ]
   }
 }
