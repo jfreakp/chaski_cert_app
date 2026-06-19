@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ShieldCheck, Users, Building2, BadgeCheck, ChevronDown, ScrollText } from 'lucide-react'
+import { ShieldCheck, Users, Building2, BadgeCheck, ChevronDown, ScrollText, Inbox } from 'lucide-react'
 
 const adminLinks = [
-  { href: '/dashboard/institutions', icon: Building2, label: 'Instituciones' },
-  { href: '/dashboard/users', icon: Users, label: 'Usuarios' },
-  { href: '/dashboard/certificate-types', icon: BadgeCheck, label: 'Tipos de Certificado' },
-  { href: '/dashboard/audit', icon: ScrollText, label: 'Auditoría' },
+  { href: '/dashboard/institutions',      icon: Building2,   label: 'Instituciones' },
+  { href: '/dashboard/users',             icon: Users,       label: 'Usuarios' },
+  { href: '/dashboard/certificate-types', icon: BadgeCheck,  label: 'Tipos de Certificado' },
+  { href: '/dashboard/account-requests',  icon: Inbox,       label: 'Solicitudes de Cuenta' },
+  { href: '/dashboard/audit',             icon: ScrollText,  label: 'Auditoría' },
 ]
 
 export default function AdminMenu() {
