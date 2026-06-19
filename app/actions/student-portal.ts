@@ -60,7 +60,9 @@ export async function getMyCertificates() {
     },
     include: {
       process: {
-        include: {
+        select: {
+          templateKey: true,
+          name: true,
           institution: { select: { name: true } },
           certificateType: { select: { name: true } },
         },

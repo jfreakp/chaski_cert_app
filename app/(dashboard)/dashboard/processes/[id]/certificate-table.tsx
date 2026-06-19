@@ -27,10 +27,12 @@ export default function CertificateTable({
   certificates,
   isAdmin,
   polygonscanBaseUrl,
+  hasTemplate,
 }: {
   certificates: Certificate[]
   isAdmin: boolean
   polygonscanBaseUrl: string
+  hasTemplate: boolean
 }) {
   return (
     <div>
@@ -84,15 +86,28 @@ export default function CertificateTable({
                     : '—'}
                 </td>
                 <td className="px-6 py-4">
-                  <a
-                    href={`/api/certificates/${c.id}/pdf`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="p-2 rounded-lg text-secondary hover:text-primary-container hover:bg-surface-container-low transition-all inline-flex"
-                    title="Descargar PDF"
-                  >
-                    <Download size={16} strokeWidth={1.75} />
-                  </a>
+                  <div className="flex items-center gap-1">
+                    <a
+                      href={`/api/certificates/${c.id}/pdf`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-2 rounded-lg text-secondary hover:text-primary-container hover:bg-surface-container-low transition-all inline-flex"
+                      title="Descargar PDF del sistema"
+                    >
+                      <Download size={16} strokeWidth={1.75} />
+                    </a>
+                    {hasTemplate && (
+                      <a
+                        href={`/api/certificates/${c.id}/pdf?type=custom`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 rounded-lg text-secondary hover:text-primary-container hover:bg-surface-container-low transition-all inline-flex"
+                        title="Descargar PDF con plantilla"
+                      >
+                        <FileText size={16} strokeWidth={1.75} />
+                      </a>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

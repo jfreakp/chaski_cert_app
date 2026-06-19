@@ -1,6 +1,7 @@
 import 'server-only'
 import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib'
 import QRCode from 'qrcode'
+import { downloadTemplate } from './storage'
 
 const BRAND  = rgb(0.10, 0.20, 0.60)
 const DARK   = rgb(0.08, 0.08, 0.12)
@@ -143,6 +144,48 @@ export async function generateCertificatePdf(cert: CertificatePdfData): Promise<
   page.drawText('Verificar', {
     x: width - qrSize - 20, y: 14, size: 6, font: fontRegular, color: GRAY,
   })
+
+  return doc.save()
+}
+
+export interface CustomCertificatePdfData {
+  studentName:    string
+  verifyUrl:      string
+  templateKey:    string
+  nameX:          number
+  nameY:          number
+  nameFontSize:   number
+  nameFontFamily: string  // nombre PostScript, ej. "Helvetica-Bold"
+  nameColor:      string  // hex, ej. "#0d0d1e"
+}
+
+export async function generateCustomCertificatePdf(data: CustomCertificatePdfData): Promise<Uint8Array> {
+  const buffer = await downloadTemplate(data.templateKey)
+  const doc    = await PDFDocument.load(buffer)
+  const pages  = doc.getPages()
+  if (pages.length === 0) throw new Error('La plantilla PDF no contiene páginas.')
+  const page   = pages[0]
+  const font   = await doc.embedFont(data.nameFontFamily as StandardFonts)
+
+  const hex = data.nameColor.replace('#', '')
+  const r   = parseInt(hex.slice(0, 2), 16) / 255
+  const g   = parseInt(hex.slice(2, 4), 16) / 255
+  const b   = parseInt(hex.slice(4, 6), 16) / 255
+
+  const textWidth = font.widthOfTextAtSize(data.studentName, data.nameFontSize)
+
+  page.drawText(data.studentName, {
+    x:     data.nameX - textWidth / 2,
+    y:     data.nameY,
+    size:  data.nameFontSize,
+    font,
+    color: rgb(r, g, b),
+  })
+
+  const { width } = page.getSize()
+  const qrPngBuffer = await QRCode.toBuffer(data.verifyUrl, { width: 80, margin: 1 })
+  const qrImage     = await doc.embedPng(qrPngBuffer)
+  page.drawImage(qrImage, { x: width - 90, y: 20, width: 70, height: 70 })
 
   return doc.save()
 }

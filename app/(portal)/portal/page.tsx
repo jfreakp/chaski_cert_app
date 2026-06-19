@@ -86,6 +86,17 @@ export default async function PortalPage() {
                     <Download size={12} strokeWidth={2} />
                     Descargar PDF
                   </a>
+                  {cert.process.templateKey && (
+                    <a
+                      href={`/api/certificates/${cert.id}/pdf?type=custom`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 border border-primary-container text-primary-container hover:bg-primary-container/5 font-bold py-2 px-4 rounded-lg transition-colors text-xs"
+                    >
+                      <FileText size={12} strokeWidth={2} />
+                      Con plantilla
+                    </a>
+                  )}
                 </div>
               </div>
             )

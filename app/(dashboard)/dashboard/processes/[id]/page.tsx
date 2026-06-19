@@ -46,6 +46,7 @@ export default async function ProcessDetailPage({ params }: { params: Promise<{ 
     !certifiedStudentIds.includes(p.studentId)
   ).length
   const issuedCount = proc.certificates.filter(c => c.status === 'ISSUED').length
+  const hasTemplate = !!proc.templateKey
 
   const polygonscanBaseUrl = process.env.NEXT_PUBLIC_BLOCKCHAIN_NETWORK === 'polygon'
     ? 'https://polygonscan.com'
@@ -122,7 +123,7 @@ export default async function ProcessDetailPage({ params }: { params: Promise<{ 
           pendingCount={pendingCount}
         />
         {proc.certificates.length > 0 && (
-          <CertificateTable certificates={proc.certificates} isAdmin={isAdmin} polygonscanBaseUrl={polygonscanBaseUrl} />
+          <CertificateTable certificates={proc.certificates} isAdmin={isAdmin} polygonscanBaseUrl={polygonscanBaseUrl} hasTemplate={hasTemplate} />
         )}
       </div>
     </div>

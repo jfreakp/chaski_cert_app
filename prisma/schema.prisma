@@ -61,6 +61,11 @@ model CertificateProcess {
   templateKey       String?
   nameX             Float?
   nameY             Float?
+  pdfWidth          Float?
+  pdfHeight         Float?
+  nameFontSize      Float?
+  nameFontFamily    String?
+  nameColor         String?
   createdAt         DateTime @default(now())
 
   institutionId     String

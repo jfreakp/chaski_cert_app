@@ -74,7 +74,8 @@
       "Bash(cat \"app/\\(dashboard\\)/dashboard/processes/[id]/participants/new/student-picker-filters.tsx\")",
       "Bash(echo \"---NEW-FILE-2---\")",
       "Bash(cat \"app/\\(dashboard\\)/dashboard/processes/[id]/participants/new/student-picker-table.tsx\")",
-      "Skill(code-review)"
+      "Skill(code-review)",
+      "Bash(grep -E \"Float|String|^\\\\s*$\")"
     ]
   }
 }

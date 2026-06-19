@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/app/lib/session'
 import { getStudentSession } from '@/app/lib/student-session'
 import { prisma } from '@/app/lib/prisma'
-import { generateCertificatePdf } from '@/app/lib/pdf'
+import { generateCertificatePdf, generateCustomCertificatePdf } from '@/app/lib/pdf'
 
 export async function GET(
   _req: NextRequest,
@@ -41,6 +41,47 @@ export async function GET(
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const safeName = cert.student.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
+
+  // ── PDF con plantilla custom ──────────────────────────────────────────────
+  const type = _req.nextUrl.searchParams.get('type')
+
+  if (type === 'custom') {
+    const proc = await prisma.certificateProcess.findUnique({
+      where: { id: cert.processId },
+      select: {
+        templateKey:    true,
+        nameX:          true,
+        nameY:          true,
+        nameFontSize:   true,
+        nameFontFamily: true,
+        nameColor:      true,
+      },
+    })
+
+    if (!proc?.templateKey || proc.nameX == null || proc.nameY == null) {
+      return NextResponse.json({ error: 'Sin plantilla configurada.' }, { status: 404 })
+    }
+
+    const pdfBytes = await generateCustomCertificatePdf({
+      studentName:    cert.student.name,
+      verifyUrl:      `${appUrl}/verify/${cert.id}`,
+      templateKey:    proc.templateKey,
+      nameX:          proc.nameX,
+      nameY:          proc.nameY,
+      nameFontSize:   proc.nameFontSize   ?? 28,
+      nameFontFamily: proc.nameFontFamily ?? 'Helvetica-Bold',
+      nameColor:      proc.nameColor      ?? '#0d0d1e',
+    })
+
+    return new NextResponse(Buffer.from(pdfBytes), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="certificado-plantilla-${safeName}.pdf"`,
+      },
+    })
+  }
+  // ── PDF del sistema (flujo existente) ─────────────────────────────────────
 
   const pdfBytes = await generateCertificatePdf({
     id: cert.id,
@@ -55,7 +96,6 @@ export async function GET(
     verifyUrl: `${appUrl}/verify/${cert.id}`,
   })
 
-  const safeName = cert.student.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
   const filename = `certificado-${safeName}.pdf`
 
   return new NextResponse(Buffer.from(pdfBytes), {
