@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { toggleCareerStatus, deleteCareer } from '@/app/actions/careers'
 import { Pencil, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
@@ -45,9 +46,10 @@ function RowActions({ career }: { career: Career }) {
       <button
         onClick={() => {
           if (career._count.enrollments > 0) return
-          if (confirm(`¿Eliminar "${career.name}"?`)) {
-            startDelete(() => deleteCareer(career.id))
-          }
+          toast.warning(`¿Eliminar "${career.name}"?`, {
+            action: { label: 'Eliminar', onClick: () => startDelete(() => deleteCareer(career.id)) },
+            cancel: { label: 'Cancelar', onClick: () => {} },
+          })
         }}
         disabled={pendingDelete || career._count.enrollments > 0}
         title={career._count.enrollments > 0 ? 'Tiene estudiantes asociados' : 'Eliminar'}

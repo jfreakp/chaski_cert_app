@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Manrope } from 'next/font/google'
+import { Toaster } from 'sonner'
 import './globals.css'
 import { PROJECT_NAME } from '@/app/lib/config'
 
@@ -19,7 +20,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" className={manrope.variable}>
-      <body className="min-h-screen font-manrope antialiased">{children}</body>
+      <body className="min-h-screen font-manrope antialiased">
+        {children}
+        <Toaster richColors position="top-right" />
+      </body>
     </html>
   )
 }

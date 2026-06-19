@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { createWalletClient, createPublicClient, custom, http, parseAbi } from 'viem'
 import { polygonAmoy, polygon } from 'viem/chains'
 import { getIssuedHashes, markCertificatesRegistered } from '@/app/actions/processes'
@@ -70,7 +71,7 @@ export default function RegisterBlockchainButton({
       setStatus('done')
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Error desconocido.'
-      alert(`Error: ${msg}`)
+      toast.error(`Error: ${msg}`)
       setStatus('idle')
     }
   }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { toggleInstitutionStatus, deleteInstitution } from '@/app/actions/institutions'
 import { Pencil, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
@@ -46,9 +47,10 @@ function RowActions({ institution }: { institution: Institution }) {
 
       <button
         onClick={() => {
-          if (confirm(`¿Eliminar "${institution.name}"? Esta acción no se puede deshacer.`)) {
-            startDelete(() => deleteInstitution(institution.id))
-          }
+          toast.warning(`¿Eliminar "${institution.name}"? Esta acción no se puede deshacer.`, {
+            action: { label: 'Eliminar', onClick: () => startDelete(() => deleteInstitution(institution.id)) },
+            cancel: { label: 'Cancelar', onClick: () => {} },
+          })
         }}
         disabled={pendingDelete || institution._count.users > 0 || institution._count.enrollments > 0 || institution._count.careers > 0}
         title={

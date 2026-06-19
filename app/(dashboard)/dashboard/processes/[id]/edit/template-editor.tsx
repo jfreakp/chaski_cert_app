@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useTransition, useActionState } from 'react'
+import { toast } from 'sonner'
 import { uploadProcessTemplate, removeProcessTemplate, updateTemplateSettings } from '@/app/actions/process-template'
 import { Upload, Trash2, Save, Loader2 } from 'lucide-react'
 
@@ -38,7 +39,6 @@ export default function TemplateEditor({
   const [fontSize,    setFontSize]    = useState(initialTemplate?.nameFontSize   ?? 28)
   const [fontFamily,  setFontFamily]  = useState(initialTemplate?.nameFontFamily ?? 'Helvetica-Bold')
   const [color,       setColor]       = useState(initialTemplate?.nameColor      ?? '#0d0d1e')
-  const [saveMsg,     setSaveMsg]     = useState<string | null>(null)
   const [saving,      startSave]      = useTransition()
   const [removing,    startRemove]    = useTransition()
 
@@ -85,16 +85,21 @@ export default function TemplateEditor({
       const result = await updateTemplateSettings(processId, {
         nameX, nameY, nameFontSize: fontSize, nameFontFamily: fontFamily, nameColor: color,
       })
-      setSaveMsg(result.success ? '¡Configuración guardada!' : 'Error al guardar.')
-      setTimeout(() => setSaveMsg(null), 3000)
+      if (result.success) toast.success('¡Configuración guardada!')
+      else toast.error('Error al guardar.')
     })
   }
 
   function handleRemove() {
-    if (!confirm('¿Eliminar la plantilla PDF de este proceso?')) return
-    startRemove(async () => {
-      await removeProcessTemplate(processId)
-      setTemplate(null)
+    toast.warning('¿Eliminar la plantilla PDF de este proceso?', {
+      action: {
+        label: 'Eliminar',
+        onClick: () => startRemove(async () => {
+          await removeProcessTemplate(processId)
+          setTemplate(null)
+        }),
+      },
+      cancel: { label: 'Cancelar', onClick: () => {} },
     })
   }
 
@@ -277,11 +282,6 @@ export default function TemplateEditor({
         </div>
       </div>
 
-      {saveMsg && (
-        <p className={`text-xs font-medium ${saveMsg.startsWith('¡') ? 'text-emerald-600' : 'text-error'}`}>
-          {saveMsg}
-        </p>
-      )}
     </div>
   )
 }

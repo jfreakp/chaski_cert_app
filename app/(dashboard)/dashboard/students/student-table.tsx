@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { toggleStudentStatus, removeEnrollment } from '@/app/actions/students'
 import { Pencil, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
@@ -50,9 +51,10 @@ function RowActions({ enrollment }: { enrollment: Enrollment }) {
 
       <button
         onClick={() => {
-          if (confirm(`¿Quitar a ${enrollment.student.name} de esta institución?`)) {
-            startRemove(() => removeEnrollment(enrollment.id))
-          }
+          toast.warning(`¿Quitar a ${enrollment.student.name} de esta institución?`, {
+            action: { label: 'Quitar', onClick: () => startRemove(() => removeEnrollment(enrollment.id)) },
+            cancel: { label: 'Cancelar', onClick: () => {} },
+          })
         }}
         disabled={pendingRemove}
         title="Quitar de esta institución"

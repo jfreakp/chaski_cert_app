@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { toggleCertificateTypeStatus, deleteCertificateType } from '@/app/actions/certificate-types'
 import { GraduationCap, Pencil, Trash2, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
@@ -35,7 +36,10 @@ function RowActions({ type }: { type: CertType }) {
       <button
         onClick={() => {
           if (type._count.processes > 0) return
-          if (confirm(`¿Eliminar "${type.name}"?`)) startDelete(() => deleteCertificateType(type.id))
+          toast.warning(`¿Eliminar "${type.name}"?`, {
+            action: { label: 'Eliminar', onClick: () => startDelete(() => deleteCertificateType(type.id)) },
+            cancel: { label: 'Cancelar', onClick: () => {} },
+          })
         }}
         disabled={pendingDelete || type._count.processes > 0}
         title={type._count.processes > 0 ? 'Tiene procesos asociados' : 'Eliminar'}

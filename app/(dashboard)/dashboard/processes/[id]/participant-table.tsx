@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { removeParticipant, generateCertificates } from '@/app/actions/processes'
 import { Users, Trash2, Loader2, Award } from 'lucide-react'
 
@@ -17,8 +18,10 @@ function RowActions({ participant, isCertified, isAdmin }: { participant: Partic
   return (
     <button
       onClick={() => {
-        if (confirm(`¿Quitar a "${participant.student.name}" del proceso?`))
-          startDelete(() => removeParticipant(participant.id))
+        toast.warning(`¿Quitar a "${participant.student.name}" del proceso?`, {
+          action: { label: 'Quitar', onClick: () => startDelete(() => removeParticipant(participant.id)) },
+          cancel: { label: 'Cancelar', onClick: () => {} },
+        })
       }}
       disabled={pending}
       className="p-2 rounded-lg text-secondary hover:text-error hover:bg-error-container/10 transition-all disabled:opacity-40"

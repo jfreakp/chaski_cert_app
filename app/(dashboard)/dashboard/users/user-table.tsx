@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { toggleUserStatus, deleteUser, sendPasswordReset } from '@/app/actions/users'
 import { Pencil, Trash2, KeyRound, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
@@ -66,9 +67,10 @@ function RowActions({ user }: { user: User }) {
 
       <button
         onClick={() => {
-          if (confirm(`¿Eliminar permanentemente a ${user.email}?`)) {
-            startDelete(() => deleteUser(user.id))
-          }
+          toast.warning(`¿Eliminar permanentemente a ${user.email}?`, {
+            action: { label: 'Eliminar', onClick: () => startDelete(() => deleteUser(user.id)) },
+            cancel: { label: 'Cancelar', onClick: () => {} },
+          })
         }}
         disabled={pendingDelete}
         title="Eliminar usuario"

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { toggleProcessStatus, deleteProcess } from '@/app/actions/processes'
 import { Pencil, Trash2, CheckCircle, XCircle, Loader2, Users } from 'lucide-react'
 
@@ -37,8 +38,14 @@ function RowActions({ proc, isAdmin }: { proc: Process; isAdmin: boolean }) {
       </button>
       <button
         onClick={() => {
-          if (proc._count.certificates > 0) return alert('No se puede eliminar un proceso con certificados generados.')
-          if (confirm(`¿Eliminar "${proc.name}"?`)) startDelete(() => deleteProcess(proc.id))
+          if (proc._count.certificates > 0) {
+            toast.error('No se puede eliminar un proceso con certificados generados.')
+            return
+          }
+          toast.warning(`¿Eliminar "${proc.name}"?`, {
+            action: { label: 'Eliminar', onClick: () => startDelete(() => deleteProcess(proc.id)) },
+            cancel: { label: 'Cancelar', onClick: () => {} },
+          })
         }}
         disabled={pendingDelete}
         className="p-2 rounded-lg text-secondary hover:text-error hover:bg-error-container/10 transition-all disabled:opacity-40">
