@@ -107,3 +107,26 @@ export type ResetPasswordFormState =
       success?: boolean
     }
   | undefined
+
+// ── Solicitud de cuenta ───────────────────────────────────────────────────────
+
+export const AccountRequestSchema = z.object({
+  name:        z.string().min(2, { error: 'Mínimo 2 caracteres.' }).trim(),
+  email:       z.email({ error: 'Correo electrónico inválido.' }).trim(),
+  phone:       z.string().min(7, { error: 'Teléfono inválido.' }).trim(),
+  institution: z.string().min(2, { error: 'Mínimo 2 caracteres.' }).trim(),
+  message:     z.string().min(10, { error: 'El mensaje debe tener al menos 10 caracteres.' }).trim(),
+})
+
+export type AccountRequestFormState =
+  | {
+      errors?: {
+        name?:        string[]
+        email?:       string[]
+        phone?:       string[]
+        institution?: string[]
+        message?:     string[]
+      }
+      success?: boolean
+    }
+  | undefined
