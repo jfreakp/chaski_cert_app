@@ -2,16 +2,7 @@
 
 import { useState } from 'react'
 import { Building2, Phone, AtSign, Calendar, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react'
-
-type AccountRequest = {
-  id: string
-  name: string
-  email: string
-  phone: string
-  institution: string
-  message: string
-  createdAt: Date
-}
+import type { AccountRequestModel as AccountRequest } from '@/app/generated/prisma/models'
 
 function MessageCell({ message }: { message: string }) {
   const [expanded, setExpanded] = useState(false)

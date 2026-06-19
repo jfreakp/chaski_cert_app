@@ -111,11 +111,11 @@ export type ResetPasswordFormState =
 // ── Solicitud de cuenta ───────────────────────────────────────────────────────
 
 export const AccountRequestSchema = z.object({
-  name:        z.string().min(2, { error: 'Mínimo 2 caracteres.' }).trim(),
-  email:       z.email({ error: 'Correo electrónico inválido.' }).trim(),
-  phone:       z.string().min(7, { error: 'Teléfono inválido.' }).trim(),
-  institution: z.string().min(2, { error: 'Mínimo 2 caracteres.' }).trim(),
-  message:     z.string().min(10, { error: 'El mensaje debe tener al menos 10 caracteres.' }).trim(),
+  name:        z.string().min(2, { error: 'Mínimo 2 caracteres.' }).max(100, { error: 'Máximo 100 caracteres.' }).trim(),
+  email:       z.string().max(254, { error: 'Correo demasiado largo.' }).email({ error: 'Correo electrónico inválido.' }).trim(),
+  phone:       z.string().min(7, { error: 'Teléfono inválido.' }).max(20, { error: 'Máximo 20 caracteres.' }).trim(),
+  institution: z.string().min(2, { error: 'Mínimo 2 caracteres.' }).max(200, { error: 'Máximo 200 caracteres.' }).trim(),
+  message:     z.string().min(10, { error: 'El mensaje debe tener al menos 10 caracteres.' }).max(1000, { error: 'Máximo 1000 caracteres.' }).trim(),
 })
 
 export type AccountRequestFormState =
