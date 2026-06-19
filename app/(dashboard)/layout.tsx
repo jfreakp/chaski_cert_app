@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getCurrentUser } from '@/app/lib/dal'
 import { PROJECT_NAME } from '@/app/lib/config'
+import { prisma } from '@/app/lib/prisma'
 import {
   LayoutDashboard,
   GraduationCap,
@@ -25,6 +26,10 @@ export default async function DashboardLayout({
 }) {
   const user = await getCurrentUser()
   const isAdmin = user?.role === 'ADMIN'
+
+  const unreadCount = isAdmin
+    ? await prisma.accountRequest.count({ where: { isRead: false } })
+    : 0
 
   const initials = user?.name
     ? user.name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
@@ -90,9 +95,24 @@ export default async function DashboardLayout({
         </p>
 
         <div className="flex items-center gap-2 ml-auto">
-          <button className="p-2 text-secondary hover:bg-surface-container rounded-full transition-colors">
-            <Bell size={20} strokeWidth={1.75} />
-          </button>
+          {isAdmin ? (
+            <Link
+              href="/dashboard/account-requests"
+              className="relative p-2 text-secondary hover:bg-surface-container rounded-full transition-colors"
+              title="Solicitudes de cuenta"
+            >
+              <Bell size={20} strokeWidth={1.75} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] font-bold text-white leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          ) : (
+            <button className="p-2 text-secondary hover:bg-surface-container rounded-full transition-colors">
+              <Bell size={20} strokeWidth={1.75} />
+            </button>
+          )}
 
           {user && (
             <UserDropdown
