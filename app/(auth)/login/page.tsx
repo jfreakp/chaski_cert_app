@@ -103,7 +103,7 @@ export default function LoginPage() {
           <footer className="pt-4 text-center">
             <p className="text-sm text-secondary">
               ¿Nuevo en {PROJECT_NAME}?{' '}
-              <a className="text-primary-container font-bold hover:underline" href="#">
+              <a className="text-primary-container font-bold hover:underline" href="/solicitar-cuenta">
                 Solicite una cuenta
               </a>
             </p>
