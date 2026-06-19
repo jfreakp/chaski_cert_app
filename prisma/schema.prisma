@@ -185,3 +185,14 @@ model User {
   issuedCertificates Certificate[]
   auditLogs  AuditLog[]
 }
+
+model AccountRequest {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  phone       String
+  institution String
+  message     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
